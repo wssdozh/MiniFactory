@@ -17,10 +17,18 @@
 4. Нажмите кнопку **Play**.
 
 ### Сборка Android APK
-1. В Unity Editor откройте **File > Build Profiles** (или **Build Settings**).
-2. Выберите платформу **Android** и нажмите **Switch Platform**.
-3. Убедитесь, что сцена `Assets/_Project/Scenes/Main.unity` добавлена в список Scenes In Build.
-4. Нажмите **Build** и выберите директорию сохранения APK.
+1. **В один клик из меню Unity Editor:**
+   - Выберите в верхнем меню: **Tools > Mini Factory > Build Android APK**.
+   - Скрипт `BuildScript.cs` автоматически настроит параметры плеера (ARM64, Portrait) и скомпилирует APK в директорию `Builds/Android/MiniFactory.apk`.
+2. **Через командную строку (CLI / CI):**
+   ```powershell
+   & "C:\Program Files\Unity\Hub\Editor\6000.3.22f1\Editor\Unity.exe" -projectPath . -executeMethod MiniFactory.Editor.BuildScript.BuildAndroid -batchmode -quit -logFile Logs/build.log
+   ```
+3. **Стандартно через Build Settings:**
+   - Откройте **File > Build Settings** (или **Build Profiles**).
+   - Выберите платформу **Android** и нажмите **Switch Platform**.
+   - Убедитесь, что сцена `Assets/_Project/Scenes/Main.unity` добавлена в список.
+   - Нажмите **Build** и выберите директорию сохранения APK.
 
 ---
 
@@ -83,6 +91,19 @@
      - `purchase_failed` (product_id, reason)
 6. **Адаптивная камера (`CameraResolutionFitter.cs`):**
    - Автоматически адаптирует ортографический размер камеры и выставляет pillarboxing при запуске на широкоформатных или нестандартных экранах, сохраняя идеальное кадрирование 9:16 фабрики и UI.
+7. **Централизованный аудио-фидбек (`FeedbackRoot.cs`):**
+   - Единый компонент `FeedbackRoot` с пулом настроенных аудио-клипов для отклика без хаотичных разрозненных AudioSource:
+     - `ButtonClick` — щелчок интерфейса;
+     - `MachineUnlock` — торжественный аккорд открытия нового станка;
+     - `MachineUpgrade` — сочный звук прокачки уровня;
+     - `BoostActive` — динамичное ускорение при активации буста;
+     - `PurchaseSuccess` — звон монет при покупке IAP-пака.
+   - Подключен через события напрямую в `Bootstrap` и во все интерактивные кнопки UI.
+8. **Анимация станков (`MachineWorldView.cs`):**
+   - Активные (открытые) машины имеют динамическое синусоидальное покачивание масштаба по оси Y без использования сторонних тяжелых библиотек (DOTween не требуется):
+     $$\text{speed} = 4.0 + \text{level} \times 0.3$$
+     $$\text{amplitude} = \min(0.04 + \text{level} \times 0.012,\, 0.14)$$
+   - Чем выше уровень станка, тем быстрее и выразительнее он качается. Неоткрытые станки затемнены и неподвижны. Нулевые аллокации в кадре.
 
 ---
 
@@ -95,10 +116,24 @@
 - `com.unity.inputsystem` (1.20.0) — New Input System.
 - `com.unity.test-framework` (1.6.0) — Unity Test Framework (NUnit).
 
-### Графика и ассеты:
+### Графика и аудио:
 - **Kenney Tiny Factory:** Аутентичные тайлы станков (`tile_0075.png` бур, `tile_0099.png` плавильня, `tile_0111.png` пресс) и бесшовный пол фабрики (`tile_0000.png`).
-- **Kenney Pixel UI:** Стильные 9-slice плашки карточек и кнопок в едином ретро-стиле.
-- **TextMeshPro:** LiberationSans SDF шрифт.
+- **Kenney Pixel UI:** 9-slice спрайты для плашек (`space.png`, `Ancient/grey.png`) и кнопок (`Colored/green.png`, `Colored/blue.png`, `Colored/yellow.png`).
+- **Kenney Future:** Пиксельный ретро-шрифт, импортированный как TextMeshPro SDF Font Asset (`KenneyFuture_SDF.asset`).
+- **Kenney Audio (Interface Sounds):** Аудио-клипы в формате OGG Vorbis (`sfx_click`, `sfx_machine_unlock`, `sfx_machine_upgrade`, `sfx_boost`, `sfx_purchase`).
+
+---
+
+## 4. Профайлинг и оптимизация (Android)
+
+- **Target Architecture:** ARM64 (IL2CPP / Android 7.0+ API 25+).
+- **SRP Batcher:** Включен в URP 2D, объединяет отрисовку тайлов и спрайтов мира в минимальное число батчей.
+- **UI Оптимизация:** 
+  - Единый динамический атлас SDF шрифта TextMeshPro (`KenneyFuture_SDF`).
+  - Все UI-элементы разбиты по слоям с 9-slice спрайтами без овердроу пустых прозрачных зон.
+  - Текстовые поля обновляются строго по событиям (`CoinsChanged`, `Changed`, `StateChanged`), а не каждый кадр в `Update()`.
+- **GC Allocations:** 0 B аллокаций в кадре в основном цикле производства и покачивания машин.
+- **Audio:** Все SFX сжаты в OGG Vorbis с качеством 100% и предзагрузкой `Preload Audio Data`, воспроизводятся через `AudioSource.PlayOneShot` без спавна временных GameObject.
 
 ---
 

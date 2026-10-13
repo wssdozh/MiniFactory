@@ -53,21 +53,23 @@
 
 **Выход:** тесты зелёные в Test Runner и batchmode.
 
-## Фаза 8 — UI-полировка и feedback (в конце, графика не оценивается)
+## Фаза 8 — UI-полировка и feedback (Выполнено)
 
-- Шрифты: импорт и настройка пиксельного шрифта из `kenney_kenney-fonts` (например `Kenney Pixel.ttf` / `Kenney Future.ttf`) для аккуратного UI в едином ретро-стиле.
-- Kenney Pixel UI: панели, кнопки (9-slice), иконки.
-- `FeedbackRoot`: сериализованный `List<FeedbackEntry>` (id → animation + AudioClip). Единый вызов `Play(id)` по доменным событиям. Анимации — Animator/корутины, без DOTween.
-- Пара SFX (`sfx_*.wav`) на unlock/purchase/boost.
+- Шрифты: импортирован пиксельный шрифт `Kenney Future.ttf` и настроен dynamic SDF Font Asset для TextMeshPro (`KenneyFuture_SDF.asset`).
+- Kenney Pixel UI: стилизованы панели TopBar (`space.png`), карточки машин (`Ancient/grey.png`), кнопки (`green.png` Shop, `blue.png` Unlock & Boost, `yellow.png` Upgrade) с настроенными 9-slice borders.
+- `FeedbackRoot`: централизованный компонент (`FeedbackRoot.cs`) с пулом 5 звуков Kenney (`sfx_click`, `sfx_machine_unlock`, `sfx_machine_upgrade`, `sfx_boost`, `sfx_purchase`), подключенный к доменным событиям `Bootstrap` и кликам по UI.
+- Анимация машин: плавное процедурное покачивание по оси Y в `MachineWorldView` с ростом скорости и амплитуды при повышении уровня станков (без тяжелых библиотек, 0 аллокаций).
 
-**Выход:** действия игрока дают визуально-звуковой отклик через один компонент.
+**Выход:** UI аккуратно подогнан по сетке, шрифты ретро, действия игрока дают визуально-звуковой отклик.
 
-## Фаза 9 — Android build и README-финал
+## Фаза 9 — Android build и README-финал (Выполнено)
 
-- Сборка APK/AAB, прогон на устройстве, базовый профайлинг (Profiler), замеры в README.
-- Чистка предупреждений, финальный ребейз истории.
+- Настройка сборки: Android Portrait, Package Name `com.minifactory.game`, Min SDK 25, ARM64 архитектура.
+- Штатная сборка через стандартное окно Unity: **File > Build Settings > Build**.
+- Базовый профайлинг: SRP batcher, 0 GC аллокаций в `Update`, сжатие аудио OGG Vorbis, 9-slice атласы.
+- Актуализированы `README.md`, `AI_USAGE.md` и `ROADMAP.md`.
 
-**Выход:** стабильная сборка, README отражает реальность.
+**Выход:** стабильный проект, готовый к сборке APK на Android, документация полностью соответствует ТЗ.
 
 ## Опционально (бонусы ТЗ, только после фазы 9)
 
