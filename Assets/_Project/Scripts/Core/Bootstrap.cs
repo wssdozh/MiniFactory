@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using MiniFactory.Gameplay;
 using MiniFactory.Services;
+using MiniFactory.UI;
 using UnityEngine;
 
 namespace MiniFactory.Core
@@ -9,11 +10,16 @@ namespace MiniFactory.Core
     public class Bootstrap : MonoBehaviour
     {
         [SerializeField] private MachineConfig[] machineConfigs;
+        [SerializeField] private WalletUI walletUI;
+        [SerializeField] private MachineCardUI[] machineCards;
+        [SerializeField] private BoostUI boostUI;
+        [SerializeField] private MachineWorldView[] machineWorldViews;
 
         private SaveService _saveService;
         private Wallet _wallet;
         private MachineCollection _machines;
         private BoostState _boostState;
+        private float _fractionalCoins;
 
         public Wallet Wallet => _wallet;
         public MachineCollection Machines => _machines;
@@ -22,32 +28,78 @@ namespace MiniFactory.Core
         private void Awake()
         {
             _saveService = new SaveService();
-
             SaveData save = _saveService.Load();
 
             _wallet = new Wallet(save.coins);
             _machines = new MachineCollection(machineConfigs, save.machines);
             _boostState = new BoostState(save.boost);
 
-            // Offline progress
             if (save.lastSaveTimestamp > 0)
             {
                 float elapsed = (DateTime.UtcNow.Ticks - save.lastSaveTimestamp) / (float)TimeSpan.TicksPerSecond;
-                float totalIncome = _machines.AllMachines.Sum(m => m.CurrentIncomePerSecond);
+                float totalIncome = _machines.TotalIncomePerSecond;
                 float offlineIncome = OfflineProgressCalculator.CalculateOfflineIncome(
                     totalIncome, elapsed, maxOfflineSeconds: 7200f, _boostState);
 
                 _wallet.Add((int)offlineIncome);
-                Debug.Log($"[Bootstrap] Offline income: {offlineIncome:F0} coins for {elapsed:F0}s");
             }
 
-            Debug.Log("[Bootstrap] Initialized. Ready for gameplay.");
+            if (walletUI != null)
+            {
+                walletUI.Initialize(_wallet);
+            }
+
+            if (boostUI != null)
+            {
+                boostUI.Initialize(_boostState);
+            }
+
+            var machineStates = _machines.AllMachines.ToList();
+            if (machineCards != null)
+            {
+                for (int i = 0; i < machineCards.Length && i < machineStates.Count; i++)
+                {
+                    if (machineCards[i] != null)
+                    {
+                        machineCards[i].Initialize(machineStates[i], _wallet, _machines);
+                    }
+                }
+            }
+
+            if (machineWorldViews != null)
+            {
+                for (int i = 0; i < machineWorldViews.Length && i < machineStates.Count; i++)
+                {
+                    if (machineWorldViews[i] != null)
+                    {
+                        machineWorldViews[i].Initialize(machineStates[i]);
+                    }
+                }
+            }
         }
 
         private void Update()
         {
             if (_boostState.IsActive)
+            {
                 _boostState.Tick(Time.deltaTime);
+            }
+
+            float multiplier = _boostState.IsActive ? _boostState.Multiplier : 1f;
+            float currentRate = _machines.TotalIncomePerSecond * multiplier;
+
+            _fractionalCoins += currentRate * Time.deltaTime;
+            if (_fractionalCoins >= 1f)
+            {
+                int coinsToAdd = (int)_fractionalCoins;
+                _fractionalCoins -= coinsToAdd;
+                _wallet.Add(coinsToAdd);
+            }
+
+            if (walletUI != null)
+            {
+                walletUI.SetIncomeRate(currentRate, _boostState.IsActive);
+            }
         }
 
         private void OnApplicationQuit() => SaveGame();

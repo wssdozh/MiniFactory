@@ -1,3 +1,6 @@
+using System;
+using MiniFactory.Services;
+
 namespace MiniFactory.Gameplay
 {
     public class BoostState
@@ -5,6 +8,8 @@ namespace MiniFactory.Gameplay
         public bool IsActive { get; private set; }
         public float Multiplier { get; private set; } = 1f;
         public float RemainingSeconds { get; private set; }
+
+        public event Action StateChanged;
 
         public BoostState(SavedBoost saved = null)
         {
@@ -21,18 +26,23 @@ namespace MiniFactory.Gameplay
             IsActive = true;
             Multiplier = multiplier;
             RemainingSeconds = duration;
+            StateChanged?.Invoke();
         }
 
         public void Tick(float deltaTime)
         {
-            if (!IsActive) return;
+            if (IsActive == false)
+            {
+                return;
+            }
 
             RemainingSeconds -= deltaTime;
-            if (RemainingSeconds <= 0)
+            if (RemainingSeconds <= 0f)
             {
                 IsActive = false;
                 Multiplier = 1f;
-                RemainingSeconds = 0;
+                RemainingSeconds = 0f;
+                StateChanged?.Invoke();
             }
         }
     }

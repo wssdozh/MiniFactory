@@ -1,18 +1,35 @@
 using System.Collections.Generic;
 using System.Linq;
+using MiniFactory.Services;
 
 namespace MiniFactory.Gameplay
 {
     public class MachineCollection
     {
         private readonly Dictionary<string, MachineState> _machines = new();
+        private readonly Dictionary<string, MachineConfig> _configs = new();
 
         public IEnumerable<MachineState> AllMachines => _machines.Values;
+
+        public float TotalIncomePerSecond
+        {
+            get
+            {
+                float total = 0f;
+                foreach (var machine in _machines.Values)
+                {
+                    total += machine.CurrentIncomePerSecond;
+                }
+                return total;
+            }
+        }
 
         public MachineCollection(MachineConfig[] configs, List<SavedMachine> savedStates = null)
         {
             foreach (var config in configs)
             {
+                _configs[config.MachineId] = config;
+                
                 var saved = savedStates?.FirstOrDefault(s => s.id == config.MachineId);
                 var state = new MachineState(
                     config,
@@ -33,8 +50,8 @@ namespace MiniFactory.Gameplay
             var machine = GetMachine(id);
             if (machine == null || machine.IsUnlocked) return false;
 
-            var config = GetConfig(id);
-            if (config == null || !wallet.TrySpend(config.UnlockCost)) return false;
+            if (!_configs.TryGetValue(id, out var config)) return false;
+            if (!wallet.TrySpend(config.UnlockCost)) return false;
 
             machine.Unlock();
             GameplayEvents.RaiseMachineUnlocked(id);
@@ -51,13 +68,6 @@ namespace MiniFactory.Gameplay
             machine.Upgrade();
             GameplayEvents.RaiseMachineUpgraded(id, machine.Level);
             return true;
-        }
-
-        private MachineConfig GetConfig(string id)
-        {
-            // ponytail: config reference stored in MachineState would avoid this lookup,
-            // but MachineState already has it via constructor — expose if needed
-            return null; // temporarily, will fix when connecting Bootstrap
         }
     }
 }

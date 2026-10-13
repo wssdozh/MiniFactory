@@ -6,16 +6,28 @@ namespace MiniFactory.Gameplay
         public bool IsUnlocked { get; private set; }
         public int Level { get; private set; }
 
+        public string DisplayName => _config.DisplayName;
+        public UnityEngine.Sprite Icon => _config.Icon;
+        public int UnlockCost => _config.UnlockCost;
+        public float BaseIncomePerSecond => _config.BaseIncomePerSecond;
+
         private readonly MachineConfig _config;
 
         public float CurrentIncomePerSecond
         {
             get
             {
-                if (!IsUnlocked) return 0f;
+                if (IsUnlocked == false)
+                {
+                    return 0f;
+                }
+
                 float income = _config.BaseIncomePerSecond;
                 for (int i = 1; i < Level; i++)
+                {
                     income *= _config.IncomePerLevelMultiplier;
+                }
+
                 return income;
             }
         }
@@ -24,10 +36,17 @@ namespace MiniFactory.Gameplay
         {
             get
             {
-                if (!IsUnlocked) return 0;
+                if (IsUnlocked == false)
+                {
+                    return 0;
+                }
+
                 float cost = _config.BaseUpgradeCost;
                 for (int i = 1; i < Level; i++)
+                {
                     cost *= _config.UpgradeCostMultiplier;
+                }
+
                 return (int)cost;
             }
         }
@@ -42,14 +61,22 @@ namespace MiniFactory.Gameplay
 
         public void Unlock()
         {
-            if (IsUnlocked) return;
+            if (IsUnlocked)
+            {
+                return;
+            }
+
             IsUnlocked = true;
             Level = 1;
         }
 
         public void Upgrade()
         {
-            if (!IsUnlocked) return;
+            if (IsUnlocked == false)
+            {
+                return;
+            }
+
             Level++;
         }
     }
