@@ -1,4 +1,5 @@
 using MiniFactory.Gameplay;
+using MiniFactory.Services;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,15 +11,33 @@ namespace MiniFactory.UI
         [SerializeField] private Button boostButton;
         [SerializeField] private TextMeshProUGUI boostButtonText;
         [SerializeField] private TextMeshProUGUI timerText;
-        [SerializeField] private float boostDuration = 30f;
-        [SerializeField] private float boostMultiplier = 2f;
 
         private BoostState _boostState;
+        private IConfigService _config;
+        private float _boostDuration = 30f;
+        private float _boostMultiplier = 2f;
 
-        public void Initialize(BoostState boostState)
+        public void Initialize(BoostState boostState, IConfigService config = null)
         {
             _boostState = boostState;
-            _boostState.StateChanged += OnBoostStateChanged;
+            _config = config;
+
+            if (_config != null)
+            {
+                _boostDuration = _config.BoostDuration;
+                _boostMultiplier = _config.BoostMultiplier;
+
+                if (_config.IsBoostEnabled == false)
+                {
+                    gameObject.SetActive(false);
+                    return;
+                }
+            }
+
+            if (_boostState != null)
+            {
+                _boostState.StateChanged += OnBoostStateChanged;
+            }
 
             if (boostButton != null)
             {
@@ -43,7 +62,7 @@ namespace MiniFactory.UI
         {
             if (_boostState != null && _boostState.IsActive == false)
             {
-                _boostState.Activate(boostDuration, boostMultiplier);
+                _boostState.Activate(_boostDuration, _boostMultiplier);
             }
         }
 
@@ -68,7 +87,7 @@ namespace MiniFactory.UI
 
                 if (boostButtonText != null)
                 {
-                    boostButtonText.text = "Boost Active";
+                    boostButtonText.text = "Active";
                 }
 
                 if (timerText != null)
@@ -85,7 +104,7 @@ namespace MiniFactory.UI
 
                 if (boostButtonText != null)
                 {
-                    boostButtonText.text = "Boost 2x";
+                    boostButtonText.text = $"Boost {_boostMultiplier:0.#}x";
                 }
 
                 if (timerText != null)

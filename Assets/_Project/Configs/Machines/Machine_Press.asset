@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MachineId: Machine_Press
   DisplayName: Press
-  Icon: {fileID: 21300000, guid: e07b0ed44230a6d40a4fa8d81c7ce1d7, type: 3}
+  Icon: {fileID: 21300000, guid: 4b5000c39e2d9db46be76f99889c7945, type: 3}
   UnlockCost: 200
   BaseIncomePerSecond: 20
   BaseUpgradeCost: 200

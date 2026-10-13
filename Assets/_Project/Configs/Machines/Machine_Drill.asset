@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MachineId: Machine_Drill
   DisplayName: Drill
-  Icon: {fileID: 21300000, guid: dd7b6cd4a12a77f43815643d91cd0e5f, type: 3}
+  Icon: {fileID: 21300000, guid: 44cfd10a909499d4c8818d7947e8325c, type: 3}
   UnlockCost: 0
   BaseIncomePerSecond: 1
   BaseUpgradeCost: 10

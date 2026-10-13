@@ -9790,10 +9790,10 @@ Tilemap:
   m_AnimatedTiles: {}
   m_TileAssetArray:
   - m_RefCount: 957
-    m_Data: {fileID: 11400000, guid: caad9db26b55ec748a176dd16dfffb78, type: 2}
+    m_Data: {fileID: 11400000, guid: cc8e9c37ca298094dad2225b7a2a48ca, type: 2}
   m_TileSpriteArray:
   - m_RefCount: 957
-    m_Data: {fileID: -4783177402104371535, guid: 57d941f7c8b5e5343a281eaa5bc2d796, type: 3}
+    m_Data: {fileID: 2216962988415778236, guid: 7b334015b85735e4ea740706c16dfc01, type: 3}
   m_TileMatrixArray:
   - m_RefCount: 957
     m_Data:
@@ -10209,7 +10209,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -5822136517719472275, guid: e07b0ed44230a6d40a4fa8d81c7ce1d7, type: 3}
+  m_Sprite: {fileID: -1051800306406100681, guid: 4b5000c39e2d9db46be76f99889c7945, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -10550,7 +10550,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u26A1 Boost 2x"
+  m_text: Boost 2x
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -11736,7 +11736,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -934806404325246637, guid: dd7b6cd4a12a77f43815643d91cd0e5f, type: 3}
+  m_Sprite: {fileID: -9027530827154965358, guid: 44cfd10a909499d4c8818d7947e8325c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -12048,6 +12048,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3faf5a213ee8fc64c9ffaea8824952a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: _Project.Runtime::MiniFactory.Core.Bootstrap
+  gameConfig: {fileID: 11400000, guid: 3c4d5e6f7a8b9c0d1e2f3a4b5c6d0303, type: 2}
   machineConfigs:
   - {fileID: 11400000, guid: 9c3d03c6f8dcd61499aeac4c81369b1b, type: 2}
   - {fileID: 11400000, guid: bedb44400402cf341994553945ff471d, type: 2}
@@ -12708,7 +12709,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -7489089114631842765, guid: ee527ad14c0dc4741a7a1420f437c580, type: 3}
+  m_Sprite: {fileID: 1948035008154585338, guid: 88fca8d80f75cda46ab301eaabaa29cb, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -13337,7 +13338,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -934806404325246637, guid: dd7b6cd4a12a77f43815643d91cd0e5f, type: 3}
+  m_Sprite: {fileID: -9027530827154965358, guid: 44cfd10a909499d4c8818d7947e8325c, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -13557,7 +13558,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -5822136517719472275, guid: e07b0ed44230a6d40a4fa8d81c7ce1d7, type: 3}
+  m_Sprite: {fileID: -1051800306406100681, guid: 4b5000c39e2d9db46be76f99889c7945, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -13877,7 +13878,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -7489089114631842765, guid: ee527ad14c0dc4741a7a1420f437c580, type: 3}
+  m_Sprite: {fileID: 1948035008154585338, guid: 88fca8d80f75cda46ab301eaabaa29cb, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -14392,8 +14393,6 @@ MonoBehaviour:
   boostButton: {fileID: 745417174}
   boostButtonText: {fileID: 317138858}
   timerText: {fileID: 1568151307}
-  boostDuration: 30
-  boostMultiplier: 2
 --- !u!224 &1705959688
 RectTransform:
   m_ObjectHideFlags: 0

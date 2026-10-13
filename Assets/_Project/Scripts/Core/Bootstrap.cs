@@ -9,6 +9,7 @@ namespace MiniFactory.Core
 {
     public class Bootstrap : MonoBehaviour
     {
+        [SerializeField] private GameConfig gameConfig;
         [SerializeField] private MachineConfig[] machineConfigs;
         [SerializeField] private WalletUI walletUI;
         [SerializeField] private MachineCardUI[] machineCards;
@@ -19,27 +20,35 @@ namespace MiniFactory.Core
         private Wallet _wallet;
         private MachineCollection _machines;
         private BoostState _boostState;
+        private IConfigService _configService;
         private float _fractionalCoins;
 
         public Wallet Wallet => _wallet;
         public MachineCollection Machines => _machines;
         public BoostState BoostState => _boostState;
+        public IConfigService ConfigService => _configService;
 
         private void Awake()
         {
+            _configService = gameConfig;
             _saveService = new SaveService();
             SaveData save = _saveService.Load();
 
+            var configs = (machineConfigs != null && machineConfigs.Length > 0)
+                ? machineConfigs
+                : (gameConfig != null ? gameConfig.MachineConfigs : Array.Empty<MachineConfig>());
+
             _wallet = new Wallet(save.coins);
-            _machines = new MachineCollection(machineConfigs, save.machines);
+            _machines = new MachineCollection(configs, save.machines);
             _boostState = new BoostState(save.boost);
 
             if (save.lastSaveTimestamp > 0)
             {
                 float elapsed = (DateTime.UtcNow.Ticks - save.lastSaveTimestamp) / (float)TimeSpan.TicksPerSecond;
                 float totalIncome = _machines.TotalIncomePerSecond;
+                float maxOfflineSeconds = _configService != null ? _configService.MaxOfflineProductionSeconds : 7200f;
                 float offlineIncome = OfflineProgressCalculator.CalculateOfflineIncome(
-                    totalIncome, elapsed, maxOfflineSeconds: 7200f, _boostState);
+                    totalIncome, elapsed, maxOfflineSeconds, _boostState);
 
                 _wallet.Add((int)offlineIncome);
             }
@@ -51,7 +60,7 @@ namespace MiniFactory.Core
 
             if (boostUI != null)
             {
-                boostUI.Initialize(_boostState);
+                boostUI.Initialize(_boostState, _configService);
             }
 
             var machineStates = _machines.AllMachines.ToList();

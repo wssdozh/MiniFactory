@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d02, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: 
+  machineConfigs:
+  - {fileID: 11400000, guid: 9c3d03c6f8dcd61499aeac4c81369b1b, type: 2}
+  - {fileID: 11400000, guid: bedb44400402cf341994553945ff471d, type: 2}
+  - {fileID: 11400000, guid: 849329efb8f962543a1691ced02052ee, type: 2}
+  boostDuration: 30
+  boostMultiplier: 2
+  isBoostEnabled: 1
+  maxOfflineProductionSeconds: 7200

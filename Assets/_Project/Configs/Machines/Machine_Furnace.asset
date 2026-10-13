@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MachineId: Machine_Furnace
   DisplayName: Furnace
-  Icon: {fileID: 21300000, guid: ee527ad14c0dc4741a7a1420f437c580, type: 3}
+  Icon: {fileID: 21300000, guid: 88fca8d80f75cda46ab301eaabaa29cb, type: 3}
   UnlockCost: 50
   BaseIncomePerSecond: 5
   BaseUpgradeCost: 50
