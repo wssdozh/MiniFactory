@@ -204,10 +204,10 @@ namespace MiniFactory.Tests
             Assert.AreEqual(ShopUI.ShopStatus.Ready, shop.Status);
 
             store.SimulatePurchaseSucceeded("coins_pack");
-            Assert.AreEqual(ShopUI.ShopStatus.Success, shop.Status);
+            Assert.AreEqual(ShopUI.ShopStatus.Ready, shop.Status);
 
             store.SimulatePurchaseFailed("coins_pack", "Failed");
-            Assert.AreEqual(ShopUI.ShopStatus.Failed, shop.Status);
+            Assert.AreEqual(ShopUI.ShopStatus.Ready, shop.Status);
 
             Object.DestroyImmediate(go);
         }

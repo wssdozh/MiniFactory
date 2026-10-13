@@ -1,3 +1,4 @@
+using System.Collections;
 using MiniFactory.Feedback;
 using MiniFactory.Services;
 using TMPro;
@@ -8,7 +9,14 @@ namespace MiniFactory.UI
 {
     public class ShopUI : MonoBehaviour
     {
-        public enum ShopStatus { Initializing, Ready, Processing, Success, Failed }
+        public enum ShopStatus
+        {
+            Initializing,
+            Ready,
+            Processing
+        }
+
+        private const float FeedbackDisplayDuration = 2f;
 
         [SerializeField] private Button buyButton;
         [SerializeField] private TextMeshProUGUI priceText;
@@ -19,6 +27,7 @@ namespace MiniFactory.UI
         private int _coinReward;
         private FeedbackRoot _feedback;
         private ShopStatus _status = ShopStatus.Initializing;
+        private Coroutine _feedbackCoroutine;
 
         public ShopStatus Status => _status;
 
@@ -37,14 +46,23 @@ namespace MiniFactory.UI
             }
 
             if (buyButton != null)
+            {
                 buyButton.onClick.AddListener(OnBuyClicked);
+            }
 
-            SetStatus(_storeService != null && _storeService.IsInitialized ? ShopStatus.Ready : ShopStatus.Initializing);
+            bool isStoreReady = _storeService != null && _storeService.IsInitialized;
+            SetStatus(isStoreReady ? ShopStatus.Ready : ShopStatus.Initializing);
             UpdateDisplay();
         }
 
         private void OnDisable()
         {
+            if (_feedbackCoroutine != null)
+            {
+                StopCoroutine(_feedbackCoroutine);
+                _feedbackCoroutine = null;
+            }
+
             if (_storeService != null)
             {
                 _storeService.Initialized -= OnStoreInitialized;
@@ -53,13 +71,17 @@ namespace MiniFactory.UI
             }
 
             if (buyButton != null)
+            {
                 buyButton.onClick.RemoveListener(OnBuyClicked);
+            }
         }
 
         private void OnBuyClicked()
         {
             if (_feedback != null)
+            {
                 _feedback.Play(FeedbackType.ButtonClick);
+            }
 
             if (_storeService != null && string.IsNullOrEmpty(_productId) == false)
             {
@@ -71,56 +93,108 @@ namespace MiniFactory.UI
         private void OnStoreInitialized()
         {
             if (_status == ShopStatus.Initializing)
+            {
                 SetStatus(ShopStatus.Ready);
+            }
 
             UpdateDisplay();
         }
 
         private void OnPurchaseSucceeded(string productId)
         {
-            if (productId == _productId)
-                SetStatus(ShopStatus.Success);
+            if (productId != _productId)
+            {
+                return;
+            }
+
+            SetStatus(ShopStatus.Ready);
+            ShowTemporaryMessage($"+{_coinReward} Coins!");
         }
 
         private void OnPurchaseFailed(string productId, string reason)
         {
-            if (productId == _productId)
-                SetStatus(ShopStatus.Failed);
+            if (productId != _productId)
+            {
+                return;
+            }
+
+            SetStatus(ShopStatus.Ready);
+            ShowTemporaryMessage("Failed");
         }
 
         private void SetStatus(ShopStatus status)
         {
             _status = status;
-            if (statusText == null)
-                return;
 
-            statusText.text = status switch
+            if (_feedbackCoroutine != null)
             {
-                ShopStatus.Initializing => "Store Init...",
-                ShopStatus.Processing => "Processing...",
-                ShopStatus.Success => $"+{_coinReward} Coins!",
-                ShopStatus.Failed => "Failed",
-                _ => string.Empty
-            };
+                StopCoroutine(_feedbackCoroutine);
+                _feedbackCoroutine = null;
+            }
+
+            if (statusText != null)
+            {
+                statusText.text = status switch
+                {
+                    ShopStatus.Initializing => "Store Init...",
+                    ShopStatus.Processing => "Processing...",
+                    _ => string.Empty
+                };
+            }
+
+            if (buyButton != null)
+            {
+                bool isStoreReady = _storeService != null && _storeService.IsInitialized;
+                buyButton.interactable = isStoreReady && _status != ShopStatus.Processing;
+            }
+        }
+
+        private void ShowTemporaryMessage(string message)
+        {
+            if (statusText == null)
+            {
+                return;
+            }
+
+            if (_feedbackCoroutine != null)
+            {
+                StopCoroutine(_feedbackCoroutine);
+            }
+
+            _feedbackCoroutine = StartCoroutine(ClearMessageRoutine(message));
+        }
+
+        private IEnumerator ClearMessageRoutine(string message)
+        {
+            statusText.text = message;
+            yield return new WaitForSeconds(FeedbackDisplayDuration);
+            statusText.text = string.Empty;
+            _feedbackCoroutine = null;
         }
 
         private void UpdateDisplay()
         {
-            bool ready = _storeService != null && _storeService.IsInitialized;
+            bool isStoreReady = _storeService != null && _storeService.IsInitialized;
 
             if (buyButton != null)
-                buyButton.interactable = ready && _status != ShopStatus.Processing;
+            {
+                buyButton.interactable = isStoreReady && _status != ShopStatus.Processing;
+            }
 
             if (priceText != null)
             {
-                string price = ready ? _storeService.GetProductPrice(_productId) : "$0.99";
+                string price = isStoreReady ? _storeService.GetProductPrice(_productId) : "$0.99";
                 priceText.text = $"+{_coinReward}\n{price}";
             }
 
-            if (!ready && _status != ShopStatus.Processing)
+            if (isStoreReady == false && _status != ShopStatus.Processing)
+            {
                 SetStatus(ShopStatus.Initializing);
-            else if (ready && _status == ShopStatus.Initializing)
+            }
+            else if (isStoreReady && _status == ShopStatus.Initializing)
+            {
                 SetStatus(ShopStatus.Ready);
+            }
         }
     }
 }
