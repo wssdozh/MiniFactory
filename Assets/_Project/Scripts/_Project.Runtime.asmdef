@@ -2,7 +2,8 @@
   "name": "_Project.Runtime",
   "rootNamespace": "MiniFactory",
   "references": [
-    "Unity.InputSystem"
+    "Unity.InputSystem",
+    "Unity.TextMeshPro"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],
