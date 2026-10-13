@@ -2,6 +2,10 @@
 
 Мобильный кликер/тайкун на Unity 6 (6000.3.22f1) под Android (портретный режим 9:16). Проект разработан по тестовому заданию Unity Developer.
 
+<p align="center">
+  <img src="Screenshots/gameplay.png" alt="Mini Factory Gameplay" width="340" />
+</p>
+
 ## Запуск и сборка
 
 ### В редакторе
