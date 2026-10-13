@@ -52,6 +52,9 @@ Screenshots/profiler_screen*
 # Visual Studio cache directory
 .vs/
 
+# Visual Studio Code
+.vscode/
+
 # Rider / IntelliJ
 .idea/
 
