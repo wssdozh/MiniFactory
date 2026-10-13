@@ -6,6 +6,8 @@
   <img src="Screenshots/gameplay.png" alt="Mini Factory Gameplay" width="340" />
 </p>
 
+> Готовые сборки для установки на телефон доступны в [Releases](https://github.com/wssdozh/MiniFactory/releases/latest): релизный `MiniFactory.apk` (44.5 МБ) и дебаг-билд `MiniFactory_Dev.apk` (79.4 МБ) для профилирования.
+
 ## Запуск и сборка
 
 ### В редакторе
