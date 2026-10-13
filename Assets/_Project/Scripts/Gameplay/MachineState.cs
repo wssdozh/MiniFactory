@@ -1,3 +1,6 @@
+using System;
+using UnityEngine;
+
 namespace MiniFactory.Gameplay
 {
     public class MachineState
@@ -7,9 +10,11 @@ namespace MiniFactory.Gameplay
         public int Level { get; private set; }
 
         public string DisplayName => _config.DisplayName;
-        public UnityEngine.Sprite Icon => _config.Icon;
+        public Sprite Icon => _config.Icon;
         public int UnlockCost => _config.UnlockCost;
         public float BaseIncomePerSecond => _config.BaseIncomePerSecond;
+
+        public event Action Changed;
 
         private readonly MachineConfig _config;
 
@@ -22,13 +27,7 @@ namespace MiniFactory.Gameplay
                     return 0f;
                 }
 
-                float income = _config.BaseIncomePerSecond;
-                for (int i = 1; i < Level; i++)
-                {
-                    income *= _config.IncomePerLevelMultiplier;
-                }
-
-                return income;
+                return _config.BaseIncomePerSecond * Mathf.Pow(_config.IncomePerLevelMultiplier, Level - 1);
             }
         }
 
@@ -41,13 +40,7 @@ namespace MiniFactory.Gameplay
                     return 0;
                 }
 
-                float cost = _config.BaseUpgradeCost;
-                for (int i = 1; i < Level; i++)
-                {
-                    cost *= _config.UpgradeCostMultiplier;
-                }
-
-                return (int)cost;
+                return (int)(_config.BaseUpgradeCost * Mathf.Pow(_config.UpgradeCostMultiplier, Level - 1));
             }
         }
 
@@ -56,7 +49,7 @@ namespace MiniFactory.Gameplay
             _config = config;
             MachineId = config.MachineId;
             IsUnlocked = unlocked;
-            Level = unlocked ? System.Math.Max(1, level) : 0;
+            Level = unlocked ? Math.Max(1, level) : 0;
         }
 
         public void Unlock()
@@ -68,6 +61,7 @@ namespace MiniFactory.Gameplay
 
             IsUnlocked = true;
             Level = 1;
+            Changed?.Invoke();
         }
 
         public void Upgrade()
@@ -78,6 +72,7 @@ namespace MiniFactory.Gameplay
             }
 
             Level++;
+            Changed?.Invoke();
         }
     }
 }

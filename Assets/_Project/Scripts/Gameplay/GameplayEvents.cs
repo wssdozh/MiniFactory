@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace MiniFactory.Gameplay
 {
@@ -9,5 +10,12 @@ namespace MiniFactory.Gameplay
 
         public static void RaiseMachineUnlocked(string id) => MachineUnlocked?.Invoke(id);
         public static void RaiseMachineUpgraded(string id, int level) => MachineUpgraded?.Invoke(id, level);
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticEvents()
+        {
+            MachineUnlocked = null;
+            MachineUpgraded = null;
+        }
     }
 }

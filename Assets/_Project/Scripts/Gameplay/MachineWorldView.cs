@@ -12,16 +12,11 @@ namespace MiniFactory.Gameplay
         public void Initialize(MachineState state)
         {
             _state = state;
-            GameplayEvents.MachineUnlocked += OnMachineUnlocked;
-            UpdateVisual();
-        }
-
-        private void OnMachineUnlocked(string id)
-        {
-            if (_state != null && id == _state.MachineId)
+            if (_state != null)
             {
-                UpdateVisual();
+                _state.Changed += UpdateVisual;
             }
+            UpdateVisual();
         }
 
         private void UpdateVisual()
@@ -31,19 +26,15 @@ namespace MiniFactory.Gameplay
                 return;
             }
 
-            if (_state.IsUnlocked)
-            {
-                spriteRenderer.color = Color.white;
-            }
-            else
-            {
-                spriteRenderer.color = new Color(0.35f, 0.35f, 0.35f, 0.7f);
-            }
+            spriteRenderer.color = _state.IsUnlocked ? Color.white : new Color(0.35f, 0.35f, 0.35f, 0.7f);
         }
 
         private void OnDisable()
         {
-            GameplayEvents.MachineUnlocked -= OnMachineUnlocked;
+            if (_state != null)
+            {
+                _state.Changed -= UpdateVisual;
+            }
         }
     }
 }

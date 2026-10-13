@@ -7,7 +7,6 @@ namespace MiniFactory.Gameplay
     public class MachineCollection
     {
         private readonly Dictionary<string, MachineState> _machines = new();
-        private readonly Dictionary<string, MachineConfig> _configs = new();
 
         public IEnumerable<MachineState> AllMachines => _machines.Values;
 
@@ -28,8 +27,6 @@ namespace MiniFactory.Gameplay
         {
             foreach (var config in configs)
             {
-                _configs[config.MachineId] = config;
-                
                 var saved = savedStates?.FirstOrDefault(s => s.id == config.MachineId);
                 var state = new MachineState(
                     config,
@@ -49,9 +46,7 @@ namespace MiniFactory.Gameplay
         {
             var machine = GetMachine(id);
             if (machine == null || machine.IsUnlocked) return false;
-
-            if (!_configs.TryGetValue(id, out var config)) return false;
-            if (!wallet.TrySpend(config.UnlockCost)) return false;
+            if (wallet.TrySpend(machine.UnlockCost) == false) return false;
 
             machine.Unlock();
             GameplayEvents.RaiseMachineUnlocked(id);
@@ -61,9 +56,8 @@ namespace MiniFactory.Gameplay
         public bool TryUpgrade(string id, Wallet wallet)
         {
             var machine = GetMachine(id);
-            if (machine == null || !machine.IsUnlocked) return false;
-
-            if (!wallet.TrySpend(machine.CurrentUpgradeCost)) return false;
+            if (machine == null || machine.IsUnlocked == false) return false;
+            if (wallet.TrySpend(machine.CurrentUpgradeCost) == false) return false;
 
             machine.Upgrade();
             GameplayEvents.RaiseMachineUpgraded(id, machine.Level);

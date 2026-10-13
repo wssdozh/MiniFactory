@@ -26,8 +26,10 @@ namespace MiniFactory.UI
             _wallet = wallet;
             _machines = machines;
 
-            GameplayEvents.MachineUnlocked += OnMachineUnlocked;
-            GameplayEvents.MachineUpgraded += OnMachineUpgraded;
+            if (_state != null)
+            {
+                _state.Changed += UpdateDisplay;
+            }
 
             if (_wallet != null)
             {
@@ -63,22 +65,6 @@ namespace MiniFactory.UI
             }
         }
 
-        private void OnMachineUnlocked(string id)
-        {
-            if (_state != null && id == _state.MachineId)
-            {
-                UpdateDisplay();
-            }
-        }
-
-        private void OnMachineUpgraded(string id, int level)
-        {
-            if (_state != null && id == _state.MachineId)
-            {
-                UpdateDisplay();
-            }
-        }
-
         private void OnCoinsChanged(int coins)
         {
             UpdateButtonsInteractable();
@@ -91,72 +77,19 @@ namespace MiniFactory.UI
                 return;
             }
 
-            if (nameText != null)
-            {
-                nameText.text = _state.DisplayName;
-            }
-
-            if (iconImage != null && _state.Icon != null)
-            {
-                iconImage.sprite = _state.Icon;
-            }
+            if (nameText != null) nameText.text = _state.DisplayName;
+            if (iconImage != null && _state.Icon != null) iconImage.sprite = _state.Icon;
 
             bool isUnlocked = _state.IsUnlocked;
 
-            if (isUnlocked == false)
-            {
-                if (levelText != null)
-                {
-                    levelText.text = "Locked";
-                }
+            if (levelText != null) levelText.text = isUnlocked ? $"Lvl {_state.Level}" : "Locked";
+            if (incomeText != null) incomeText.text = $"+{(isUnlocked ? _state.CurrentIncomePerSecond : _state.BaseIncomePerSecond):F1}/s";
 
-                if (incomeText != null)
-                {
-                    incomeText.text = $"+{_state.BaseIncomePerSecond:F1}/s";
-                }
+            if (unlockButton != null) unlockButton.gameObject.SetActive(isUnlocked == false);
+            if (upgradeButton != null) upgradeButton.gameObject.SetActive(isUnlocked);
 
-                if (unlockButton != null)
-                {
-                    unlockButton.gameObject.SetActive(true);
-                }
-
-                if (upgradeButton != null)
-                {
-                    upgradeButton.gameObject.SetActive(false);
-                }
-
-                if (unlockCostText != null)
-                {
-                    unlockCostText.text = $"Unlock: {_state.UnlockCost}";
-                }
-            }
-            else
-            {
-                if (levelText != null)
-                {
-                    levelText.text = $"Lvl {_state.Level}";
-                }
-
-                if (incomeText != null)
-                {
-                    incomeText.text = $"+{_state.CurrentIncomePerSecond:F1}/s";
-                }
-
-                if (unlockButton != null)
-                {
-                    unlockButton.gameObject.SetActive(false);
-                }
-
-                if (upgradeButton != null)
-                {
-                    upgradeButton.gameObject.SetActive(true);
-                }
-
-                if (upgradeCostText != null)
-                {
-                    upgradeCostText.text = $"Upgrade: {_state.CurrentUpgradeCost}";
-                }
-            }
+            if (unlockCostText != null) unlockCostText.text = $"Unlock: {_state.UnlockCost}";
+            if (upgradeCostText != null) upgradeCostText.text = $"Upgrade: {_state.CurrentUpgradeCost}";
 
             UpdateButtonsInteractable();
         }
@@ -186,8 +119,10 @@ namespace MiniFactory.UI
 
         private void OnDisable()
         {
-            GameplayEvents.MachineUnlocked -= OnMachineUnlocked;
-            GameplayEvents.MachineUpgraded -= OnMachineUpgraded;
+            if (_state != null)
+            {
+                _state.Changed -= UpdateDisplay;
+            }
 
             if (_wallet != null)
             {
