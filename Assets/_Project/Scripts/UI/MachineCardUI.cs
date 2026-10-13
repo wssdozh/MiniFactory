@@ -1,3 +1,4 @@
+using MiniFactory.Feedback;
 using MiniFactory.Gameplay;
 using TMPro;
 using UnityEngine;
@@ -19,12 +20,14 @@ namespace MiniFactory.UI
         private MachineState _state;
         private Wallet _wallet;
         private MachineCollection _machines;
+        private FeedbackRoot _feedback;
 
-        public void Initialize(MachineState state, Wallet wallet, MachineCollection machines)
+        public void Initialize(MachineState state, Wallet wallet, MachineCollection machines, FeedbackRoot feedback = null)
         {
             _state = state;
             _wallet = wallet;
             _machines = machines;
+            _feedback = feedback;
 
             if (_state != null)
             {
@@ -51,6 +54,11 @@ namespace MiniFactory.UI
 
         private void OnUnlockClicked()
         {
+            if (_feedback != null)
+            {
+                _feedback.Play(FeedbackType.ButtonClick);
+            }
+
             if (_machines != null && _state != null && _wallet != null)
             {
                 _machines.TryUnlock(_state.MachineId, _wallet);
@@ -59,6 +67,11 @@ namespace MiniFactory.UI
 
         private void OnUpgradeClicked()
         {
+            if (_feedback != null)
+            {
+                _feedback.Play(FeedbackType.ButtonClick);
+            }
+
             if (_machines != null && _state != null && _wallet != null)
             {
                 _machines.TryUpgrade(_state.MachineId, _wallet);

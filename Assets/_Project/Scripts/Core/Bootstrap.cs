@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MiniFactory.Feedback;
 using MiniFactory.Gameplay;
 using MiniFactory.Services;
 using MiniFactory.UI;
@@ -17,6 +18,7 @@ namespace MiniFactory.Core
         [SerializeField] private BoostUI boostUI;
         [SerializeField] private ShopUI shopUI;
         [SerializeField] private MachineWorldView[] machineWorldViews;
+        [SerializeField] private FeedbackRoot feedbackRoot;
 
         private SaveService _saveService;
         private Wallet _wallet;
@@ -94,12 +96,12 @@ namespace MiniFactory.Core
 
             if (boostUI != null)
             {
-                boostUI.Initialize(_boostState, _configService);
+                boostUI.Initialize(_boostState, _configService, feedbackRoot);
             }
 
             if (shopUI != null)
             {
-                shopUI.Initialize(_storeService, _coinsPackId, _coinsPackReward);
+                shopUI.Initialize(_storeService, _coinsPackId, _coinsPackReward, feedbackRoot);
             }
 
             List<MachineState> machineStates = _machines.AllMachines.ToList();
@@ -109,7 +111,7 @@ namespace MiniFactory.Core
                 {
                     if (machineCards[i] != null)
                     {
-                        machineCards[i].Initialize(machineStates[i], _wallet, _machines);
+                        machineCards[i].Initialize(machineStates[i], _wallet, _machines, feedbackRoot);
                     }
                 }
             }
@@ -174,6 +176,12 @@ namespace MiniFactory.Core
             {
                 _wallet.Add(_coinsPackReward);
                 SaveGame();
+
+                if (feedbackRoot != null)
+                {
+                    feedbackRoot.Play(FeedbackType.PurchaseSuccess);
+                }
+
                 _analyticsService.LogEvent("purchase_succeeded", new Dictionary<string, object>
                 {
                     { "product_id", id },
@@ -193,6 +201,11 @@ namespace MiniFactory.Core
 
         private void OnMachineUnlocked(string id)
         {
+            if (feedbackRoot != null)
+            {
+                feedbackRoot.Play(FeedbackType.MachineUnlock);
+            }
+
             _analyticsService.LogEvent("machine_unlocked", new Dictionary<string, object>
             {
                 { "machine_id", id }
@@ -201,6 +214,11 @@ namespace MiniFactory.Core
 
         private void OnMachineUpgraded(string id, int level)
         {
+            if (feedbackRoot != null)
+            {
+                feedbackRoot.Play(FeedbackType.MachineUpgrade);
+            }
+
             _analyticsService.LogEvent("machine_upgraded", new Dictionary<string, object>
             {
                 { "machine_id", id },
@@ -210,6 +228,11 @@ namespace MiniFactory.Core
 
         private void OnBoostStarted(float duration, float multiplier)
         {
+            if (feedbackRoot != null)
+            {
+                feedbackRoot.Play(FeedbackType.BoostActive);
+            }
+
             _analyticsService.LogEvent("boost_started", new Dictionary<string, object>
             {
                 { "duration", duration },

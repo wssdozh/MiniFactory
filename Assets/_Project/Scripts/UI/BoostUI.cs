@@ -1,3 +1,4 @@
+using MiniFactory.Feedback;
 using MiniFactory.Gameplay;
 using MiniFactory.Services;
 using TMPro;
@@ -14,13 +15,15 @@ namespace MiniFactory.UI
 
         private BoostState _boostState;
         private IConfigService _config;
+        private FeedbackRoot _feedback;
         private float _boostDuration = 30f;
         private float _boostMultiplier = 2f;
 
-        public void Initialize(BoostState boostState, IConfigService config = null)
+        public void Initialize(BoostState boostState, IConfigService config = null, FeedbackRoot feedback = null)
         {
             _boostState = boostState;
             _config = config;
+            _feedback = feedback;
 
             if (_config != null)
             {
@@ -60,6 +63,11 @@ namespace MiniFactory.UI
 
         private void OnBoostClicked()
         {
+            if (_feedback != null)
+            {
+                _feedback.Play(FeedbackType.ButtonClick);
+            }
+
             if (_boostState != null && _boostState.IsActive == false)
             {
                 _boostState.Activate(_boostDuration, _boostMultiplier);

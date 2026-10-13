@@ -1,3 +1,4 @@
+using MiniFactory.Feedback;
 using MiniFactory.Services;
 using TMPro;
 using UnityEngine;
@@ -14,12 +15,14 @@ namespace MiniFactory.UI
         private IStoreService _storeService;
         private string _productId;
         private int _coinReward;
+        private FeedbackRoot _feedback;
 
-        public void Initialize(IStoreService storeService, string productId, int coinReward)
+        public void Initialize(IStoreService storeService, string productId, int coinReward, FeedbackRoot feedback = null)
         {
             _storeService = storeService;
             _productId = productId;
             _coinReward = coinReward;
+            _feedback = feedback;
 
             if (_storeService != null)
             {
@@ -53,6 +56,11 @@ namespace MiniFactory.UI
 
         private void OnBuyClicked()
         {
+            if (_feedback != null)
+            {
+                _feedback.Play(FeedbackType.ButtonClick);
+            }
+
             if (_storeService != null && string.IsNullOrEmpty(_productId) == false)
             {
                 if (statusText != null)
