@@ -103,7 +103,11 @@ namespace MiniFactory.Services
         {
             string productId = failedOrder.CartOrdered?.Items()?.FirstOrDefault()?.Product?.definition?.id ?? string.Empty;
             string reason = $"{failedOrder.FailureReason}: {failedOrder.Details}";
-            Debug.LogError($"[IAP] Purchase failed for {productId}: {reason}");
+            if (reason.Contains("UserCancelled"))
+                Debug.LogWarning($"[IAP] Purchase cancelled by user: {productId} ({reason})");
+            else
+                Debug.LogError($"[IAP] Purchase failed for {productId}: {reason}");
+
             PurchaseFailed?.Invoke(productId, reason);
         }
 
