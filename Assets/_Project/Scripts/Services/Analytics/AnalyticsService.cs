@@ -10,7 +10,7 @@ namespace MiniFactory.Services
         {
             if (providers != null)
             {
-                foreach (var provider in providers)
+                foreach (IAnalyticsProvider provider in providers)
                 {
                     if (provider != null)
                     {

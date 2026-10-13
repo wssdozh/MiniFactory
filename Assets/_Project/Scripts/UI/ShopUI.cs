@@ -36,7 +36,7 @@ namespace MiniFactory.UI
             UpdateDisplay();
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
             if (_storeService != null)
             {
@@ -53,7 +53,7 @@ namespace MiniFactory.UI
 
         private void OnBuyClicked()
         {
-            if (_storeService != null && !string.IsNullOrEmpty(_productId))
+            if (_storeService != null && string.IsNullOrEmpty(_productId) == false)
             {
                 if (statusText != null)
                 {
@@ -99,7 +99,7 @@ namespace MiniFactory.UI
                 priceText.text = $"+{_coinReward} ({price})";
             }
 
-            if (statusText != null && !ready)
+            if (statusText != null && ready == false)
             {
                 statusText.text = "Store Init...";
             }

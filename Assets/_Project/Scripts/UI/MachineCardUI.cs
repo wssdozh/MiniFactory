@@ -77,19 +77,47 @@ namespace MiniFactory.UI
                 return;
             }
 
-            if (nameText != null) nameText.text = _state.DisplayName;
-            if (iconImage != null && _state.Icon != null) iconImage.sprite = _state.Icon;
+            if (nameText != null)
+            {
+                nameText.text = _state.DisplayName;
+            }
+
+            if (iconImage != null && _state.Icon != null)
+            {
+                iconImage.sprite = _state.Icon;
+            }
 
             bool isUnlocked = _state.IsUnlocked;
 
-            if (levelText != null) levelText.text = isUnlocked ? $"Lvl {_state.Level}" : "Locked";
-            if (incomeText != null) incomeText.text = $"+{(isUnlocked ? _state.CurrentIncomePerSecond : _state.BaseIncomePerSecond):F1}/s";
+            if (levelText != null)
+            {
+                levelText.text = isUnlocked ? $"Lvl {_state.Level}" : "Locked";
+            }
 
-            if (unlockButton != null) unlockButton.gameObject.SetActive(isUnlocked == false);
-            if (upgradeButton != null) upgradeButton.gameObject.SetActive(isUnlocked);
+            if (incomeText != null)
+            {
+                incomeText.text = $"+{(isUnlocked ? _state.CurrentIncomePerSecond : _state.BaseIncomePerSecond):F1}/s";
+            }
 
-            if (unlockCostText != null) unlockCostText.text = $"Unlock: {_state.UnlockCost}";
-            if (upgradeCostText != null) upgradeCostText.text = $"Upgrade: {_state.CurrentUpgradeCost}";
+            if (unlockButton != null)
+            {
+                unlockButton.gameObject.SetActive(isUnlocked == false);
+            }
+
+            if (upgradeButton != null)
+            {
+                upgradeButton.gameObject.SetActive(isUnlocked);
+            }
+
+            if (unlockCostText != null)
+            {
+                unlockCostText.text = $"Unlock: {_state.UnlockCost}";
+            }
+
+            if (upgradeCostText != null)
+            {
+                upgradeCostText.text = $"Upgrade: {_state.CurrentUpgradeCost}";
+            }
 
             UpdateButtonsInteractable();
         }

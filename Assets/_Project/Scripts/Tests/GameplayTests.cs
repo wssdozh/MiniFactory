@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using MiniFactory.Gameplay;
+using MiniFactory.Services;
 using UnityEngine;
 
 namespace MiniFactory.Tests
@@ -9,7 +11,7 @@ namespace MiniFactory.Tests
     {
         private MachineConfig CreateDummyConfig(string id, int unlockCost, float baseIncome, int baseUpgradeCost)
         {
-            var config = ScriptableObject.CreateInstance<MachineConfig>();
+            MachineConfig config = ScriptableObject.CreateInstance<MachineConfig>();
             config.MachineId = id;
             config.DisplayName = id;
             config.UnlockCost = unlockCost;
@@ -23,7 +25,7 @@ namespace MiniFactory.Tests
         [Test]
         public void Wallet_TrySpend_RejectsWhenInsufficientCoins()
         {
-            var wallet = new Wallet(10);
+            Wallet wallet = new Wallet(10);
             bool spent = wallet.TrySpend(50);
 
             Assert.IsFalse(spent);
@@ -33,7 +35,7 @@ namespace MiniFactory.Tests
         [Test]
         public void Wallet_TrySpend_SucceedsAndDeductsCoins()
         {
-            var wallet = new Wallet(50);
+            Wallet wallet = new Wallet(50);
             bool spent = wallet.TrySpend(30);
 
             Assert.IsTrue(spent);
@@ -43,8 +45,8 @@ namespace MiniFactory.Tests
         [Test]
         public void MachineState_Unlock_StartsAtLevel1WithBaseIncome()
         {
-            var config = CreateDummyConfig("TestMachine", 50, 10f, 20);
-            var machine = new MachineState(config, unlocked: false, level: 0);
+            MachineConfig config = CreateDummyConfig("TestMachine", 50, 10f, 20);
+            MachineState machine = new MachineState(config, unlocked: false, level: 0);
 
             Assert.IsFalse(machine.IsUnlocked);
             Assert.AreEqual(0, machine.Level);
@@ -60,8 +62,8 @@ namespace MiniFactory.Tests
         [Test]
         public void MachineState_Upgrade_IncreasesIncomeAndCost()
         {
-            var config = CreateDummyConfig("TestMachine", 0, 10f, 20);
-            var machine = new MachineState(config, unlocked: true, level: 1);
+            MachineConfig config = CreateDummyConfig("TestMachine", 0, 10f, 20);
+            MachineState machine = new MachineState(config, unlocked: true, level: 1);
 
             int initialCost = machine.CurrentUpgradeCost;
             float initialIncome = machine.CurrentIncomePerSecond;
@@ -93,20 +95,19 @@ namespace MiniFactory.Tests
             float elapsedSeconds = 100f;
             float maxOfflineSeconds = 7200f;
 
-            var boost = new BoostState();
+            BoostState boost = new BoostState();
             boost.Activate(duration: 30f, multiplier: 2f);
 
             float offlineIncome = OfflineProgressCalculator.CalculateOfflineIncome(
                 incomePerSec, elapsedSeconds, maxOfflineSeconds, boost);
 
-            // 30 seconds at 2x (600) + 70 seconds at 1x (700) = 1300
             Assert.AreEqual(1300f, offlineIncome);
         }
 
         [Test]
         public void BoostState_TicksAndExpiresProperly()
         {
-            var boost = new BoostState();
+            BoostState boost = new BoostState();
             boost.Activate(duration: 10f, multiplier: 2f);
 
             Assert.IsTrue(boost.IsActive);
@@ -125,7 +126,7 @@ namespace MiniFactory.Tests
         [Test]
         public void BoostState_FiresStartedAndFinishedEvents()
         {
-            var boost = new BoostState();
+            BoostState boost = new BoostState();
             bool startedFired = false;
             float startedDuration = 0f;
             float startedMultiplier = 0f;
@@ -156,11 +157,11 @@ namespace MiniFactory.Tests
         [Test]
         public void AnalyticsService_DispatchesToMultipleProviders()
         {
-            var providerA = new MockAnalyticsProvider();
-            var providerB = new MockAnalyticsProvider();
-            var service = new MiniFactory.Services.AnalyticsService(providerA, providerB);
+            MockAnalyticsProvider providerA = new MockAnalyticsProvider();
+            MockAnalyticsProvider providerB = new MockAnalyticsProvider();
+            AnalyticsService service = new AnalyticsService(providerA, providerB);
 
-            var parameters = new System.Collections.Generic.Dictionary<string, object>
+            Dictionary<string, object> parameters = new Dictionary<string, object>
             {
                 { "machine_id", "drill" },
                 { "level", 2 }
@@ -180,26 +181,25 @@ namespace MiniFactory.Tests
         [Test]
         public void Store_SimulatedPurchaseSucceeded_CreditsWallet()
         {
-            var wallet = new Wallet(100);
+            Wallet wallet = new Wallet(100);
             int rewardAmount = 500;
 
-            // Simulate purchase callback flow
             wallet.Add(rewardAmount);
 
             Assert.AreEqual(600, wallet.Coins);
         }
 
-        private class MockAnalyticsProvider : MiniFactory.Services.IAnalyticsProvider
+        private class MockAnalyticsProvider : IAnalyticsProvider
         {
             public class EventRecord
             {
                 public string Name;
-                public System.Collections.Generic.Dictionary<string, object> Params;
+                public Dictionary<string, object> Params;
             }
 
-            public System.Collections.Generic.List<EventRecord> LoggedEvents { get; } = new();
+            public List<EventRecord> LoggedEvents { get; } = new();
 
-            public void LogEvent(string eventName, System.Collections.Generic.Dictionary<string, object> parameters = null)
+            public void LogEvent(string eventName, Dictionary<string, object> parameters = null)
             {
                 LoggedEvents.Add(new EventRecord { Name = eventName, Params = parameters });
             }

@@ -57,7 +57,7 @@ namespace MiniFactory.Services
 
         private void OnStoreConnected()
         {
-            var definitions = _productIds
+            List<ProductDefinition> definitions = _productIds
                 .Select(id => new ProductDefinition(id, ProductType.Consumable))
                 .ToList();
 
@@ -90,7 +90,7 @@ namespace MiniFactory.Services
             string productId = pendingOrder.CartOrdered.Items().FirstOrDefault()?.Product.definition.id;
             _storeController.ConfirmPurchase(pendingOrder);
 
-            if (!string.IsNullOrEmpty(productId))
+            if (string.IsNullOrEmpty(productId) == false)
             {
                 Debug.Log($"[IAP] Purchase pending resolved and confirmed: {productId}");
                 PurchaseSucceeded?.Invoke(productId);

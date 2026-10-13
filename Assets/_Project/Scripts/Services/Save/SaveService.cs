@@ -38,7 +38,7 @@ namespace MiniFactory.Services
 
         public SaveData Load()
         {
-            if (!File.Exists(SavePath))
+            if (File.Exists(SavePath) == false)
             {
                 Debug.Log("[SaveService] No save file found, starting fresh.");
                 return new SaveData();
@@ -47,7 +47,7 @@ namespace MiniFactory.Services
             try
             {
                 string json = File.ReadAllText(SavePath);
-                var data = JsonUtility.FromJson<SaveData>(json);
+                SaveData data = JsonUtility.FromJson<SaveData>(json);
                 Debug.Log($"[SaveService] Loaded save v{data.version}: {data.coins} coins, {data.machines.Count} machines.");
                 return data;
             }
@@ -65,13 +65,16 @@ namespace MiniFactory.Services
                 data.lastSaveTimestamp = DateTime.UtcNow.Ticks;
                 string json = JsonUtility.ToJson(data, true);
                 
-                // Atomic write: temp -> replace
                 File.WriteAllText(TempPath, json);
                 
                 if (File.Exists(SavePath))
+                {
                     File.Replace(TempPath, SavePath, null);
+                }
                 else
+                {
                     File.Move(TempPath, SavePath);
+                }
 
                 Debug.Log($"[SaveService] Saved v{data.version}: {data.coins} coins.");
             }

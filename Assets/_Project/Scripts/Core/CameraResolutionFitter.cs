@@ -58,15 +58,11 @@ namespace MiniFactory.Core
 
             if (variance < 1.0f)
             {
-                // Taller than 9:16 (tall phones like 19.5:9, 20:9)
-                // Fullscreen viewport, adapt orthographic size to preserve horizontal framing
                 _camera.rect = new Rect(0f, 0f, 1f, 1f);
                 _camera.orthographicSize = baseOrthographicSize / variance;
             }
             else
             {
-                // Wider than 9:16 (Free Aspect, 16:9, landscape, tablets)
-                // Pillarbox to maintain exact mobile portrait aspect ratio
                 float insetWidth = 1.0f / variance;
                 float insetX = (1.0f - insetWidth) / 2.0f;
                 _camera.rect = new Rect(insetX, 0f, insetWidth, 1f);

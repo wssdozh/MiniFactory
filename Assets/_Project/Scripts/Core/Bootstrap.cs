@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using MiniFactory.Gameplay;
 using MiniFactory.Services;
@@ -25,6 +26,8 @@ namespace MiniFactory.Core
         private IAnalyticsService _analyticsService;
         private IStoreService _storeService;
         private float _fractionalCoins;
+        private string _coinsPackId;
+        private int _coinsPackReward;
 
         public Wallet Wallet => _wallet;
         public MachineCollection Machines => _machines;
@@ -40,7 +43,7 @@ namespace MiniFactory.Core
             _analyticsService = new AnalyticsService(new DebugAnalyticsProvider());
             SaveData save = _saveService.Load();
 
-            var configs = (machineConfigs != null && machineConfigs.Length > 0)
+            MachineConfig[] configs = (machineConfigs != null && machineConfigs.Length > 0)
                 ? machineConfigs
                 : (gameConfig != null ? gameConfig.MachineConfigs : Array.Empty<MachineConfig>());
 
@@ -48,67 +51,18 @@ namespace MiniFactory.Core
             _machines = new MachineCollection(configs, save.machines);
             _boostState = new BoostState(save.boost);
 
-            // Setup IAP
-            string coinsPackId = _configService != null ? _configService.CoinsPackSmallId : "coins_pack_small";
-            int coinsPackReward = _configService != null ? _configService.CoinsPackSmallReward : 500;
-            _storeService = new UnityIAPStoreService(new[] { coinsPackId }, forceFakeStore: true);
+            _coinsPackId = _configService != null ? _configService.CoinsPackSmallId : "coins_pack_small";
+            _coinsPackReward = _configService != null ? _configService.CoinsPackSmallReward : 500;
+            _storeService = new UnityIAPStoreService(new[] { _coinsPackId }, forceFakeStore: true);
 
-            _storeService.PurchaseSucceeded += (id) =>
-            {
-                if (id == coinsPackId)
-                {
-                    _wallet.Add(coinsPackReward);
-                    SaveGame();
-                    _analyticsService.LogEvent("purchase_succeeded", new System.Collections.Generic.Dictionary<string, object>
-                    {
-                        { "product_id", id },
-                        { "coins_reward", coinsPackReward }
-                    });
-                }
-            };
-
-            _storeService.PurchaseFailed += (id, reason) =>
-            {
-                _analyticsService.LogEvent("purchase_failed", new System.Collections.Generic.Dictionary<string, object>
-                {
-                    { "product_id", id },
-                    { "reason", reason }
-                });
-            };
-
+            _storeService.PurchaseSucceeded += OnPurchaseSucceeded;
+            _storeService.PurchaseFailed += OnPurchaseFailed;
             _storeService.Initialize();
 
-            // Bind domain events to Analytics
-            GameplayEvents.MachineUnlocked += (id) =>
-            {
-                _analyticsService.LogEvent("machine_unlocked", new System.Collections.Generic.Dictionary<string, object>
-                {
-                    { "machine_id", id }
-                });
-            };
-
-            GameplayEvents.MachineUpgraded += (id, level) =>
-            {
-                _analyticsService.LogEvent("machine_upgraded", new System.Collections.Generic.Dictionary<string, object>
-                {
-                    { "machine_id", id },
-                    { "new_level", level }
-                });
-            };
-
-            _boostState.BoostStarted += (duration, multiplier) =>
-            {
-                _analyticsService.LogEvent("boost_started", new System.Collections.Generic.Dictionary<string, object>
-                {
-                    { "duration", duration },
-                    { "multiplier", multiplier }
-                });
-            };
-
-            _boostState.BoostFinished += () =>
-            {
-                _analyticsService.LogEvent("boost_finished");
-            };
+            GameplayEvents.MachineUnlocked += OnMachineUnlocked;
+            GameplayEvents.MachineUpgraded += OnMachineUpgraded;
+            _boostState.BoostStarted += OnBoostStarted;
+            _boostState.BoostFinished += OnBoostFinished;
 
             if (save.lastSaveTimestamp > 0)
             {
@@ -120,14 +74,14 @@ namespace MiniFactory.Core
 
                 _wallet.Add((int)offlineIncome);
 
-                _analyticsService.LogEvent("offline_income_applied", new System.Collections.Generic.Dictionary<string, object>
+                _analyticsService.LogEvent("offline_income_applied", new Dictionary<string, object>
                 {
                     { "offline_seconds", Mathf.Min(elapsed, maxOfflineSeconds) },
                     { "offline_income", (int)offlineIncome }
                 });
             }
 
-            _analyticsService.LogEvent("game_started", new System.Collections.Generic.Dictionary<string, object>
+            _analyticsService.LogEvent("game_started", new Dictionary<string, object>
             {
                 { "coins", _wallet.Coins },
                 { "unlocked_machines_count", _machines.AllMachines.Count(m => m.IsUnlocked) }
@@ -145,10 +99,10 @@ namespace MiniFactory.Core
 
             if (shopUI != null)
             {
-                shopUI.Initialize(_storeService, coinsPackId, coinsPackReward);
+                shopUI.Initialize(_storeService, _coinsPackId, _coinsPackReward);
             }
 
-            var machineStates = _machines.AllMachines.ToList();
+            List<MachineState> machineStates = _machines.AllMachines.ToList();
             if (machineCards != null)
             {
                 for (int i = 0; i < machineCards.Length && i < machineStates.Count; i++)
@@ -196,12 +150,94 @@ namespace MiniFactory.Core
             }
         }
 
-        private void OnApplicationQuit() => SaveGame();
-        private void OnApplicationPause(bool pause) { if (pause) SaveGame(); }
+        private void OnDestroy()
+        {
+            if (_storeService != null)
+            {
+                _storeService.PurchaseSucceeded -= OnPurchaseSucceeded;
+                _storeService.PurchaseFailed -= OnPurchaseFailed;
+            }
+
+            GameplayEvents.MachineUnlocked -= OnMachineUnlocked;
+            GameplayEvents.MachineUpgraded -= OnMachineUpgraded;
+
+            if (_boostState != null)
+            {
+                _boostState.BoostStarted -= OnBoostStarted;
+                _boostState.BoostFinished -= OnBoostFinished;
+            }
+        }
+
+        private void OnPurchaseSucceeded(string id)
+        {
+            if (id == _coinsPackId)
+            {
+                _wallet.Add(_coinsPackReward);
+                SaveGame();
+                _analyticsService.LogEvent("purchase_succeeded", new Dictionary<string, object>
+                {
+                    { "product_id", id },
+                    { "coins_reward", _coinsPackReward }
+                });
+            }
+        }
+
+        private void OnPurchaseFailed(string id, string reason)
+        {
+            _analyticsService.LogEvent("purchase_failed", new Dictionary<string, object>
+            {
+                { "product_id", id },
+                { "reason", reason }
+            });
+        }
+
+        private void OnMachineUnlocked(string id)
+        {
+            _analyticsService.LogEvent("machine_unlocked", new Dictionary<string, object>
+            {
+                { "machine_id", id }
+            });
+        }
+
+        private void OnMachineUpgraded(string id, int level)
+        {
+            _analyticsService.LogEvent("machine_upgraded", new Dictionary<string, object>
+            {
+                { "machine_id", id },
+                { "new_level", level }
+            });
+        }
+
+        private void OnBoostStarted(float duration, float multiplier)
+        {
+            _analyticsService.LogEvent("boost_started", new Dictionary<string, object>
+            {
+                { "duration", duration },
+                { "multiplier", multiplier }
+            });
+        }
+
+        private void OnBoostFinished()
+        {
+            _analyticsService.LogEvent("boost_finished");
+        }
+
+        private void OnApplicationQuit()
+        {
+            SaveGame();
+        }
+
+        private void OnApplicationPause(bool pause)
+        {
+            if (pause)
+            {
+                SaveGame();
+            }
+        }
 
         private void SaveGame()
         {
-            var save = new SaveData
+            SaveData save = new SaveData
             {
                 coins = _wallet.Coins,
                 lastSaveTimestamp = DateTime.UtcNow.Ticks,

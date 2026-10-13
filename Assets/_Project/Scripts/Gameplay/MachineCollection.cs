@@ -15,7 +15,7 @@ namespace MiniFactory.Gameplay
             get
             {
                 float total = 0f;
-                foreach (var machine in _machines.Values)
+                foreach (MachineState machine in _machines.Values)
                 {
                     total += machine.CurrentIncomePerSecond;
                 }
@@ -25,10 +25,10 @@ namespace MiniFactory.Gameplay
 
         public MachineCollection(MachineConfig[] configs, List<SavedMachine> savedStates = null)
         {
-            foreach (var config in configs)
+            foreach (MachineConfig config in configs)
             {
-                var saved = savedStates?.FirstOrDefault(s => s.id == config.MachineId);
-                var state = new MachineState(
+                SavedMachine saved = savedStates?.FirstOrDefault(s => s.id == config.MachineId);
+                MachineState state = new MachineState(
                     config,
                     saved?.unlocked ?? (config.UnlockCost == 0),
                     saved?.level ?? 0
@@ -39,14 +39,21 @@ namespace MiniFactory.Gameplay
 
         public MachineState GetMachine(string id)
         {
-            return _machines.TryGetValue(id, out var machine) ? machine : null;
+            return _machines.TryGetValue(id, out MachineState machine) ? machine : null;
         }
 
         public bool TryUnlock(string id, Wallet wallet)
         {
-            var machine = GetMachine(id);
-            if (machine == null || machine.IsUnlocked) return false;
-            if (wallet.TrySpend(machine.UnlockCost) == false) return false;
+            MachineState machine = GetMachine(id);
+            if (machine == null || machine.IsUnlocked)
+            {
+                return false;
+            }
+
+            if (wallet.TrySpend(machine.UnlockCost) == false)
+            {
+                return false;
+            }
 
             machine.Unlock();
             GameplayEvents.RaiseMachineUnlocked(id);
@@ -55,9 +62,16 @@ namespace MiniFactory.Gameplay
 
         public bool TryUpgrade(string id, Wallet wallet)
         {
-            var machine = GetMachine(id);
-            if (machine == null || machine.IsUnlocked == false) return false;
-            if (wallet.TrySpend(machine.CurrentUpgradeCost) == false) return false;
+            MachineState machine = GetMachine(id);
+            if (machine == null || machine.IsUnlocked == false)
+            {
+                return false;
+            }
+
+            if (wallet.TrySpend(machine.CurrentUpgradeCost) == false)
+            {
+                return false;
+            }
 
             machine.Upgrade();
             GameplayEvents.RaiseMachineUpgraded(id, machine.Level);
