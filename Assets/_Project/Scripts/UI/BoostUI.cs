@@ -57,7 +57,7 @@ namespace MiniFactory.UI
             {
                 _lastDisplayedSeconds = remainingSeconds;
                 if (boostButtonText != null)
-                    boostButtonText.text = $"ACTIVE\n{remainingSeconds}s";
+                    boostButtonText.SetText("ACTIVE\n{0}s", remainingSeconds);
             }
         }
 

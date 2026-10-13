@@ -21,13 +21,13 @@ namespace MiniFactory.UI
         public void SetIncomeRate(float rate, bool isBoosted)
         {
             if (incomeRateText != null)
-                incomeRateText.text = isBoosted ? $"+{rate:F1}/s (x2)" : $"+{rate:F1}/s";
+                incomeRateText.SetText(isBoosted ? "+{0:F1}/s (x2)" : "+{0:F1}/s", rate);
         }
 
         private void OnCoinsChanged(int newCoins)
         {
             if (coinsText != null)
-                coinsText.text = $"Coins: {newCoins}";
+                coinsText.SetText("Coins: {0}", newCoins);
         }
 
         private void OnDisable()
