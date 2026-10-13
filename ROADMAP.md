@@ -29,7 +29,7 @@
 ## Фаза 4 — Analytics
 
 - `IAnalyticsService` + `DebugAnalyticsService` (Console). Gameplay знает только интерфейс.
-- События ТЗ: `game_started`, `machine_unlocked`, `machine_upgraded`, `boost_started`, `boost_finished`, `offline_income_applied`, `purchase_succeeded`, `purchase_failed`.
+- События: `game_started`, `machine_unlocked`, `machine_upgraded`, `boost_started`, `boost_finished`, `offline_income_applied`, `purchase_succeeded`, `purchase_failed`.
 
 **Выход:** события видны в Console, gameplay-код не ссылается на SDK.
 
@@ -49,7 +49,7 @@
 
 ## Фаза 7 — Тесты
 
-Минимум 3 EditMode unit-теста (ТЗ): расчёт production за elapsed time; offline progress с cap и boost; unlock/upgrade (state + событие ровно один раз).
+EditMode unit-тесты: расчёт production за elapsed time; offline progress с cap и boost; unlock/upgrade (state + событие ровно один раз).
 
 **Выход:** тесты зелёные в Test Runner и batchmode.
 
@@ -69,9 +69,9 @@
 - Базовый профайлинг: SRP batcher, 0 GC аллокаций в `Update`, сжатие аудио OGG Vorbis, 9-slice атласы.
 - Актуализированы `README.md`, `AI_USAGE.md` и `ROADMAP.md`.
 
-**Выход:** стабильный проект, готовый к сборке APK на Android, документация полностью соответствует ТЗ.
+**Выход:** стабильный проект, готовый к сборке APK на Android, документация оформлена.
 
-## Опционально (бонусы ТЗ, только после фазы 9)
+## Опционально (после фазы 9)
 
 - Firebase Remote Config с локальным fallback.
 - Firebase Analytics / AppMetrica как второй провайдер `IAnalyticsService`.
