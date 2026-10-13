@@ -61,8 +61,8 @@ namespace MiniFactory.Core
             _storeService.PurchaseFailed += OnPurchaseFailed;
             _storeService.Initialize();
 
-            GameplayEvents.MachineUnlocked += OnMachineUnlocked;
-            GameplayEvents.MachineUpgraded += OnMachineUpgraded;
+            _machines.MachineUnlocked += OnMachineUnlocked;
+            _machines.MachineUpgraded += OnMachineUpgraded;
             _boostState.BoostStarted += OnBoostStarted;
             _boostState.BoostFinished += OnBoostFinished;
 
@@ -83,10 +83,17 @@ namespace MiniFactory.Core
                 });
             }
 
+            int unlockedCount = 0;
+            for (int i = 0; i < _machines.AllMachines.Count; i++)
+            {
+                if (_machines.AllMachines[i].IsUnlocked)
+                    unlockedCount++;
+            }
+
             _analyticsService.LogEvent("game_started", new Dictionary<string, object>
             {
                 { "coins", _wallet.Coins },
-                { "unlocked_machines_count", _machines.AllMachines.Count(m => m.IsUnlocked) }
+                { "unlocked_machines_count", unlockedCount }
             });
 
             if (walletUI != null)
@@ -98,7 +105,7 @@ namespace MiniFactory.Core
             if (shopUI != null)
                 shopUI.Initialize(_storeService, _coinsPackId, _coinsPackReward, feedbackRoot);
 
-            List<MachineState> machineStates = _machines.AllMachines.ToList();
+            IReadOnlyList<MachineState> machineStates = _machines.AllMachines;
             if (machineCards != null)
             {
                 for (int i = 0; i < machineCards.Length && i < machineStates.Count; i++)
@@ -116,6 +123,8 @@ namespace MiniFactory.Core
                         machineWorldViews[i].Initialize(machineStates[i]);
                 }
             }
+
+            UpdateIncomeRate();
         }
 
         private void Update()
@@ -133,9 +142,15 @@ namespace MiniFactory.Core
                 _fractionalCoins -= coinsToAdd;
                 _wallet.Add(coinsToAdd);
             }
+        }
 
-            if (walletUI != null)
-                walletUI.SetIncomeRate(currentRate, _boostState.IsActive);
+        private void UpdateIncomeRate()
+        {
+            if (walletUI == null || _machines == null || _boostState == null)
+                return;
+
+            float multiplier = _boostState.IsActive ? _boostState.Multiplier : 1f;
+            walletUI.SetIncomeRate(_machines.TotalIncomePerSecond * multiplier, _boostState.IsActive);
         }
 
         private void OnDestroy()
@@ -146,8 +161,11 @@ namespace MiniFactory.Core
                 _storeService.PurchaseFailed -= OnPurchaseFailed;
             }
 
-            GameplayEvents.MachineUnlocked -= OnMachineUnlocked;
-            GameplayEvents.MachineUpgraded -= OnMachineUpgraded;
+            if (_machines != null)
+            {
+                _machines.MachineUnlocked -= OnMachineUnlocked;
+                _machines.MachineUpgraded -= OnMachineUpgraded;
+            }
 
             if (_boostState != null)
             {
@@ -185,6 +203,8 @@ namespace MiniFactory.Core
 
         private void OnMachineUnlocked(string id)
         {
+            UpdateIncomeRate();
+
             if (feedbackRoot != null)
                 feedbackRoot.Play(FeedbackType.MachineUnlock);
 
@@ -196,6 +216,8 @@ namespace MiniFactory.Core
 
         private void OnMachineUpgraded(string id, int level)
         {
+            UpdateIncomeRate();
+
             if (feedbackRoot != null)
                 feedbackRoot.Play(FeedbackType.MachineUpgrade);
 
@@ -208,6 +230,8 @@ namespace MiniFactory.Core
 
         private void OnBoostStarted(float duration, float multiplier)
         {
+            UpdateIncomeRate();
+
             if (feedbackRoot != null)
                 feedbackRoot.Play(FeedbackType.BoostActive);
 
@@ -220,6 +244,7 @@ namespace MiniFactory.Core
 
         private void OnBoostFinished()
         {
+            UpdateIncomeRate();
             _analyticsService.LogEvent("boost_finished");
         }
 
@@ -236,16 +261,23 @@ namespace MiniFactory.Core
 
         private void SaveGame()
         {
-            SaveData save = new SaveData
+            List<SavedMachine> savedMachines = new List<SavedMachine>(_machines.AllMachines.Count);
+            for (int i = 0; i < _machines.AllMachines.Count; i++)
             {
-                coins = _wallet.Coins,
-                lastSaveTimestamp = DateTime.UtcNow.Ticks,
-                machines = _machines.AllMachines.Select(m => new SavedMachine
+                MachineState m = _machines.AllMachines[i];
+                savedMachines.Add(new SavedMachine
                 {
                     id = m.MachineId,
                     unlocked = m.IsUnlocked,
                     level = m.Level
-                }).ToList(),
+                });
+            }
+
+            SaveData save = new SaveData
+            {
+                coins = _wallet.Coins,
+                lastSaveTimestamp = DateTime.UtcNow.Ticks,
+                machines = savedMachines,
                 boost = new SavedBoost
                 {
                     active = _boostState.IsActive,

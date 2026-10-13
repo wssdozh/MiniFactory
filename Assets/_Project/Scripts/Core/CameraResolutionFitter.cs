@@ -20,6 +20,14 @@ namespace MiniFactory.Core
             UpdateViewport(Screen.width, Screen.height);
         }
 
+        private void OnEnable()
+        {
+            if (_camera == null)
+                _camera = GetComponent<Camera>();
+
+            UpdateViewport(Screen.width, Screen.height);
+        }
+
         private void Update()
         {
             if (Screen.width != _lastWidth || Screen.height != _lastHeight)
@@ -28,21 +36,14 @@ namespace MiniFactory.Core
 
         public void UpdateViewport(int width, int height)
         {
-            if (_camera == null)
-            {
-                _camera = GetComponent<Camera>();
-                if (_camera == null)
-                    return;
-            }
+            if (_camera == null || width <= 0 || height <= 0)
+                return;
 
             _lastWidth = width;
             _lastHeight = height;
 
-            if (_lastWidth <= 0 || _lastHeight <= 0)
-                return;
-
             float targetAspect = targetAspectWidth / targetAspectHeight;
-            float currentAspect = (float)_lastWidth / _lastHeight;
+            float currentAspect = (float)width / height;
             float variance = currentAspect / targetAspect;
 
             if (variance < 1.0f)

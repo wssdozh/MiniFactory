@@ -18,6 +18,7 @@ namespace MiniFactory.UI
         private FeedbackRoot _feedback;
         private float _boostDuration = 30f;
         private float _boostMultiplier = 2f;
+        private int _lastDisplayedSeconds = -1;
 
         public void Initialize(BoostState boostState, IConfigService config = null, FeedbackRoot feedback = null)
         {
@@ -48,10 +49,15 @@ namespace MiniFactory.UI
 
         private void Update()
         {
-            if (_boostState != null && _boostState.IsActive)
+            if (_boostState == null || _boostState.IsActive == false)
+                return;
+
+            int remainingSeconds = Mathf.CeilToInt(_boostState.RemainingSeconds);
+            if (remainingSeconds != _lastDisplayedSeconds)
             {
+                _lastDisplayedSeconds = remainingSeconds;
                 if (boostButtonText != null)
-                    boostButtonText.text = $"ACTIVE\n{_boostState.RemainingSeconds:F0}s";
+                    boostButtonText.text = $"ACTIVE\n{remainingSeconds}s";
             }
         }
 
@@ -66,6 +72,7 @@ namespace MiniFactory.UI
 
         private void OnBoostStateChanged()
         {
+            _lastDisplayedSeconds = -1;
             UpdateDisplay();
         }
 

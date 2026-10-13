@@ -4,7 +4,8 @@ namespace MiniFactory.Gameplay
 {
     public class MachineWorldView : MonoBehaviour
     {
-        [SerializeField] private string machineId;
+        private static readonly Color LockedColor = new Color(0.35f, 0.35f, 0.35f, 0.7f);
+
         [SerializeField] private SpriteRenderer spriteRenderer;
 
         private MachineState _state;
@@ -40,7 +41,7 @@ namespace MiniFactory.Gameplay
             if (spriteRenderer == null || _state == null)
                 return;
 
-            spriteRenderer.color = _state.IsUnlocked ? Color.white : new Color(0.35f, 0.35f, 0.35f, 0.7f);
+            spriteRenderer.color = _state.IsUnlocked ? Color.white : LockedColor;
         }
 
         private void OnDisable()

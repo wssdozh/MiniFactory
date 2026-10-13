@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MiniFactory.Services;
@@ -7,24 +8,30 @@ namespace MiniFactory.Gameplay
     public class MachineCollection
     {
         private readonly Dictionary<string, MachineState> _machines = new();
+        private readonly List<MachineState> _allMachines = new();
 
-        public IEnumerable<MachineState> AllMachines => _machines.Values;
+        public IReadOnlyList<MachineState> AllMachines => _allMachines;
+
+        public event Action<string> MachineUnlocked;
+        public event Action<string, int> MachineUpgraded;
 
         public float TotalIncomePerSecond
         {
             get
             {
                 float total = 0f;
-                foreach (MachineState machine in _machines.Values)
-                {
-                    total += machine.CurrentIncomePerSecond;
-                }
+                for (int i = 0; i < _allMachines.Count; i++)
+                    total += _allMachines[i].CurrentIncomePerSecond;
+
                 return total;
             }
         }
 
         public MachineCollection(MachineConfig[] configs, List<SavedMachine> savedStates = null)
         {
+            if (configs == null)
+                return;
+
             foreach (MachineConfig config in configs)
             {
                 SavedMachine saved = savedStates?.FirstOrDefault(s => s.id == config.MachineId);
@@ -34,6 +41,7 @@ namespace MiniFactory.Gameplay
                     saved?.level ?? 0
                 );
                 _machines[config.MachineId] = state;
+                _allMachines.Add(state);
             }
         }
 
@@ -52,7 +60,7 @@ namespace MiniFactory.Gameplay
                 return false;
 
             machine.Unlock();
-            GameplayEvents.RaiseMachineUnlocked(id);
+            MachineUnlocked?.Invoke(id);
             return true;
         }
 
@@ -66,7 +74,7 @@ namespace MiniFactory.Gameplay
                 return false;
 
             machine.Upgrade();
-            GameplayEvents.RaiseMachineUpgraded(id, machine.Level);
+            MachineUpgraded?.Invoke(id, machine.Level);
             return true;
         }
     }
