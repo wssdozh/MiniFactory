@@ -54,9 +54,9 @@ namespace MiniFactory.UI
         {
             if (_boostState != null && _boostState.IsActive)
             {
-                if (timerText != null)
+                if (boostButtonText != null)
                 {
-                    timerText.text = $"{_boostState.RemainingSeconds:F0}s";
+                    boostButtonText.text = $"ACTIVE\n{_boostState.RemainingSeconds:F0}s";
                 }
             }
         }
@@ -95,12 +95,12 @@ namespace MiniFactory.UI
 
                 if (boostButtonText != null)
                 {
-                    boostButtonText.text = "Active";
+                    boostButtonText.text = $"ACTIVE\n{_boostState.RemainingSeconds:F0}s";
                 }
 
                 if (timerText != null)
                 {
-                    timerText.text = $"{_boostState.RemainingSeconds:F0}s";
+                    timerText.text = string.Empty;
                 }
             }
             else
@@ -112,12 +112,12 @@ namespace MiniFactory.UI
 
                 if (boostButtonText != null)
                 {
-                    boostButtonText.text = $"Boost {_boostMultiplier:0.#}x";
+                    boostButtonText.text = $"BOOST\n{_boostMultiplier:0.#}X";
                 }
 
                 if (timerText != null)
                 {
-                    timerText.text = "";
+                    timerText.text = string.Empty;
                 }
             }
         }

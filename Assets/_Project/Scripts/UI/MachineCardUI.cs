@@ -124,12 +124,12 @@ namespace MiniFactory.UI
 
             if (unlockCostText != null)
             {
-                unlockCostText.text = $"Unlock: {_state.UnlockCost}";
+                unlockCostText.text = $"UNLOCK\n{_state.UnlockCost}";
             }
 
             if (upgradeCostText != null)
             {
-                upgradeCostText.text = $"Upgrade: {_state.CurrentUpgradeCost}";
+                upgradeCostText.text = $"UPGRADE\n{_state.CurrentUpgradeCost}";
             }
 
             UpdateButtonsInteractable();

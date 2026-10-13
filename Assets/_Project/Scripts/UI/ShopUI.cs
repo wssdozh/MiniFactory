@@ -104,7 +104,7 @@ namespace MiniFactory.UI
             if (priceText != null)
             {
                 string price = ready ? _storeService.GetProductPrice(_productId) : "$0.99";
-                priceText.text = $"+{_coinReward} ({price})";
+                priceText.text = $"+{_coinReward}\n{price}";
             }
 
             if (statusText != null && ready == false)
