@@ -10,6 +10,8 @@ namespace MiniFactory.Gameplay
         public float RemainingSeconds { get; private set; }
 
         public event Action StateChanged;
+        public event Action<float, float> BoostStarted;
+        public event Action BoostFinished;
 
         public BoostState(SavedBoost saved = null)
         {
@@ -27,6 +29,7 @@ namespace MiniFactory.Gameplay
             Multiplier = multiplier;
             RemainingSeconds = duration;
             StateChanged?.Invoke();
+            BoostStarted?.Invoke(duration, multiplier);
         }
 
         public void Tick(float deltaTime)
@@ -43,6 +46,7 @@ namespace MiniFactory.Gameplay
                 Multiplier = 1f;
                 RemainingSeconds = 0f;
                 StateChanged?.Invoke();
+                BoostFinished?.Invoke();
             }
         }
     }
