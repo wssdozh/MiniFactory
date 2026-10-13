@@ -6,5 +6,7 @@ namespace MiniFactory.Services
         float BoostMultiplier { get; }
         bool IsBoostEnabled { get; }
         float MaxOfflineProductionSeconds { get; }
+        string CoinsPackSmallId { get; }
+        int CoinsPackSmallReward { get; }
     }
 }

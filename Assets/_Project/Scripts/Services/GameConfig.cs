@@ -17,10 +17,16 @@ namespace MiniFactory.Services
         [Header("Offline Progress Settings")]
         [SerializeField] private float maxOfflineProductionSeconds = 7200f;
 
+        [Header("IAP Settings")]
+        [SerializeField] private string coinsPackSmallId = "coins_pack_small";
+        [SerializeField] private int coinsPackSmallReward = 500;
+
         public MachineConfig[] MachineConfigs => machineConfigs;
         public float BoostDuration => boostDuration;
         public float BoostMultiplier => boostMultiplier;
         public bool IsBoostEnabled => isBoostEnabled;
         public float MaxOfflineProductionSeconds => maxOfflineProductionSeconds;
+        public string CoinsPackSmallId => coinsPackSmallId;
+        public int CoinsPackSmallReward => coinsPackSmallReward;
     }
 }

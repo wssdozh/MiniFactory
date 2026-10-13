@@ -3,7 +3,9 @@
   "rootNamespace": "MiniFactory",
   "references": [
     "Unity.InputSystem",
-    "Unity.TextMeshPro"
+    "Unity.TextMeshPro",
+    "Unity.Purchasing",
+    "Unity.Purchasing.Stores"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],
