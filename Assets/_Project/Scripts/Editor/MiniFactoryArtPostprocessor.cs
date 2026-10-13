@@ -11,9 +11,7 @@ namespace MiniFactory.Editor
         private void OnPreprocessTexture()
         {
             if (assetPath.StartsWith(ArtRoot) == false)
-            {
                 return;
-            }
 
             TextureImporter importer = (TextureImporter)assetImporter;
             importer.textureType = TextureImporterType.Sprite;
@@ -22,9 +20,7 @@ namespace MiniFactory.Editor
             importer.textureCompression = TextureImporterCompression.Uncompressed;
 
             if (assetPath.StartsWith(TilesRoot))
-            {
                 importer.spritePixelsPerUnit = 16;
-            }
         }
     }
 }

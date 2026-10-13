@@ -38,14 +38,10 @@ namespace MiniFactory.UI
             }
 
             if (_boostState != null)
-            {
                 _boostState.StateChanged += OnBoostStateChanged;
-            }
 
             if (boostButton != null)
-            {
                 boostButton.onClick.AddListener(OnBoostClicked);
-            }
 
             UpdateDisplay();
         }
@@ -55,23 +51,17 @@ namespace MiniFactory.UI
             if (_boostState != null && _boostState.IsActive)
             {
                 if (boostButtonText != null)
-                {
                     boostButtonText.text = $"ACTIVE\n{_boostState.RemainingSeconds:F0}s";
-                }
             }
         }
 
         private void OnBoostClicked()
         {
             if (_feedback != null)
-            {
                 _feedback.Play(FeedbackType.ButtonClick);
-            }
 
             if (_boostState != null && _boostState.IsActive == false)
-            {
                 _boostState.Activate(_boostDuration, _boostMultiplier);
-            }
         }
 
         private void OnBoostStateChanged()
@@ -82,57 +72,39 @@ namespace MiniFactory.UI
         private void UpdateDisplay()
         {
             if (_boostState == null)
-            {
                 return;
-            }
 
             if (_boostState.IsActive)
             {
                 if (boostButton != null)
-                {
                     boostButton.interactable = false;
-                }
 
                 if (boostButtonText != null)
-                {
                     boostButtonText.text = $"ACTIVE\n{_boostState.RemainingSeconds:F0}s";
-                }
 
                 if (timerText != null)
-                {
                     timerText.text = string.Empty;
-                }
             }
             else
             {
                 if (boostButton != null)
-                {
                     boostButton.interactable = true;
-                }
 
                 if (boostButtonText != null)
-                {
                     boostButtonText.text = $"BOOST\n{_boostMultiplier:0.#}X";
-                }
 
                 if (timerText != null)
-                {
                     timerText.text = string.Empty;
-                }
             }
         }
 
         private void OnDisable()
         {
             if (_boostState != null)
-            {
                 _boostState.StateChanged -= OnBoostStateChanged;
-            }
 
             if (boostButton != null)
-            {
                 boostButton.onClick.RemoveListener(OnBoostClicked);
-            }
         }
     }
 }

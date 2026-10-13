@@ -11,11 +11,9 @@ namespace MiniFactory.Gameplay
             BoostState boost)
         {
             float cappedElapsed = Math.Min(elapsedSeconds, maxOfflineSeconds);
-            
+
             if (boost == null || boost.IsActive == false)
-            {
                 return incomePerSec * cappedElapsed;
-            }
 
             float boostedDuration = Math.Min(boost.RemainingSeconds, cappedElapsed);
             float normalDuration = cappedElapsed - boostedDuration;

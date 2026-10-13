@@ -46,14 +46,10 @@ namespace MiniFactory.Gameplay
         {
             MachineState machine = GetMachine(id);
             if (machine == null || machine.IsUnlocked)
-            {
                 return false;
-            }
 
             if (wallet.TrySpend(machine.UnlockCost) == false)
-            {
                 return false;
-            }
 
             machine.Unlock();
             GameplayEvents.RaiseMachineUnlocked(id);
@@ -64,14 +60,10 @@ namespace MiniFactory.Gameplay
         {
             MachineState machine = GetMachine(id);
             if (machine == null || machine.IsUnlocked == false)
-            {
                 return false;
-            }
 
             if (wallet.TrySpend(machine.CurrentUpgradeCost) == false)
-            {
                 return false;
-            }
 
             machine.Upgrade();
             GameplayEvents.RaiseMachineUpgraded(id, machine.Level);

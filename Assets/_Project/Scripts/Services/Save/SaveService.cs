@@ -39,10 +39,7 @@ namespace MiniFactory.Services
         public SaveData Load()
         {
             if (File.Exists(SavePath) == false)
-            {
-                Debug.Log("[SaveService] No save file found, starting fresh.");
                 return new SaveData();
-            }
 
             try
             {
@@ -68,13 +65,9 @@ namespace MiniFactory.Services
                 File.WriteAllText(TempPath, json);
                 
                 if (File.Exists(SavePath))
-                {
                     File.Replace(TempPath, SavePath, null);
-                }
                 else
-                {
                     File.Move(TempPath, SavePath);
-                }
 
                 Debug.Log($"[SaveService] Saved v{data.version}: {data.coins} coins.");
             }

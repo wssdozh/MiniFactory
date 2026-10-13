@@ -32,9 +32,7 @@ namespace MiniFactory.UI
             }
 
             if (buyButton != null)
-            {
                 buyButton.onClick.AddListener(OnBuyClicked);
-            }
 
             UpdateDisplay();
         }
@@ -49,24 +47,18 @@ namespace MiniFactory.UI
             }
 
             if (buyButton != null)
-            {
                 buyButton.onClick.RemoveListener(OnBuyClicked);
-            }
         }
 
         private void OnBuyClicked()
         {
             if (_feedback != null)
-            {
                 _feedback.Play(FeedbackType.ButtonClick);
-            }
 
             if (_storeService != null && string.IsNullOrEmpty(_productId) == false)
             {
                 if (statusText != null)
-                {
                     statusText.text = "Processing...";
-                }
                 _storeService.Purchase(_productId);
             }
         }
@@ -79,17 +71,13 @@ namespace MiniFactory.UI
         private void OnPurchaseSucceeded(string productId)
         {
             if (productId == _productId && statusText != null)
-            {
                 statusText.text = $"+{_coinReward} Coins!";
-            }
         }
 
         private void OnPurchaseFailed(string productId, string reason)
         {
             if (productId == _productId && statusText != null)
-            {
                 statusText.text = "Failed";
-            }
         }
 
         private void UpdateDisplay()
@@ -97,9 +85,7 @@ namespace MiniFactory.UI
             bool ready = _storeService != null && _storeService.IsInitialized;
 
             if (buyButton != null)
-            {
                 buyButton.interactable = ready;
-            }
 
             if (priceText != null)
             {
@@ -108,13 +94,9 @@ namespace MiniFactory.UI
             }
 
             if (statusText != null && ready == false)
-            {
                 statusText.text = "Store Init...";
-            }
             else if (statusText != null && statusText.text == "Store Init...")
-            {
                 statusText.text = string.Empty;
-            }
         }
     }
 }

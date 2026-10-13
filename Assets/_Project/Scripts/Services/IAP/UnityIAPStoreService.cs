@@ -26,14 +26,10 @@ namespace MiniFactory.Services
         public async void Initialize()
         {
             if (IsInitialized || _storeController != null)
-            {
                 return;
-            }
 
             if (_forceFakeStore)
-            {
                 DefaultStoreHelper.OverrideDefaultStoreName("fake");
-            }
 
             _storeController = UnityIAPServices.StoreController();
 
@@ -100,9 +96,7 @@ namespace MiniFactory.Services
         private void OnPurchaseConfirmed(Order order)
         {
             if (order is FailedOrder failedOrder)
-            {
                 Debug.LogError($"[IAP] Order confirmation failed: {failedOrder.FailureReason} - {failedOrder.Details}");
-            }
         }
 
         private void OnPurchaseFailed(FailedOrder failedOrder)
@@ -129,21 +123,15 @@ namespace MiniFactory.Services
 
             Product product = _storeController.GetProductById(productId);
             if (product != null)
-            {
                 _storeController.PurchaseProduct(product);
-            }
             else
-            {
                 _storeController.PurchaseProduct(productId);
-            }
         }
 
         public string GetProductPrice(string productId)
         {
             if (IsInitialized == false || _storeController == null)
-            {
                 return "$0.99";
-            }
 
             Product product = _storeController.GetProductById(productId);
             return product?.metadata?.localizedPriceString ?? "$0.99";

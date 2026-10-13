@@ -90,19 +90,13 @@ namespace MiniFactory.Core
             });
 
             if (walletUI != null)
-            {
                 walletUI.Initialize(_wallet);
-            }
 
             if (boostUI != null)
-            {
                 boostUI.Initialize(_boostState, _configService, feedbackRoot);
-            }
 
             if (shopUI != null)
-            {
                 shopUI.Initialize(_storeService, _coinsPackId, _coinsPackReward, feedbackRoot);
-            }
 
             List<MachineState> machineStates = _machines.AllMachines.ToList();
             if (machineCards != null)
@@ -110,9 +104,7 @@ namespace MiniFactory.Core
                 for (int i = 0; i < machineCards.Length && i < machineStates.Count; i++)
                 {
                     if (machineCards[i] != null)
-                    {
                         machineCards[i].Initialize(machineStates[i], _wallet, _machines, feedbackRoot);
-                    }
                 }
             }
 
@@ -121,9 +113,7 @@ namespace MiniFactory.Core
                 for (int i = 0; i < machineWorldViews.Length && i < machineStates.Count; i++)
                 {
                     if (machineWorldViews[i] != null)
-                    {
                         machineWorldViews[i].Initialize(machineStates[i]);
-                    }
                 }
             }
         }
@@ -131,9 +121,7 @@ namespace MiniFactory.Core
         private void Update()
         {
             if (_boostState.IsActive)
-            {
                 _boostState.Tick(Time.deltaTime);
-            }
 
             float multiplier = _boostState.IsActive ? _boostState.Multiplier : 1f;
             float currentRate = _machines.TotalIncomePerSecond * multiplier;
@@ -147,9 +135,7 @@ namespace MiniFactory.Core
             }
 
             if (walletUI != null)
-            {
                 walletUI.SetIncomeRate(currentRate, _boostState.IsActive);
-            }
         }
 
         private void OnDestroy()
@@ -172,22 +158,20 @@ namespace MiniFactory.Core
 
         private void OnPurchaseSucceeded(string id)
         {
-            if (id == _coinsPackId)
+            if (id != _coinsPackId)
+                return;
+
+            _wallet.Add(_coinsPackReward);
+            SaveGame();
+
+            if (feedbackRoot != null)
+                feedbackRoot.Play(FeedbackType.PurchaseSuccess);
+
+            _analyticsService.LogEvent("purchase_succeeded", new Dictionary<string, object>
             {
-                _wallet.Add(_coinsPackReward);
-                SaveGame();
-
-                if (feedbackRoot != null)
-                {
-                    feedbackRoot.Play(FeedbackType.PurchaseSuccess);
-                }
-
-                _analyticsService.LogEvent("purchase_succeeded", new Dictionary<string, object>
-                {
-                    { "product_id", id },
-                    { "coins_reward", _coinsPackReward }
-                });
-            }
+                { "product_id", id },
+                { "coins_reward", _coinsPackReward }
+            });
         }
 
         private void OnPurchaseFailed(string id, string reason)
@@ -202,9 +186,7 @@ namespace MiniFactory.Core
         private void OnMachineUnlocked(string id)
         {
             if (feedbackRoot != null)
-            {
                 feedbackRoot.Play(FeedbackType.MachineUnlock);
-            }
 
             _analyticsService.LogEvent("machine_unlocked", new Dictionary<string, object>
             {
@@ -215,9 +197,7 @@ namespace MiniFactory.Core
         private void OnMachineUpgraded(string id, int level)
         {
             if (feedbackRoot != null)
-            {
                 feedbackRoot.Play(FeedbackType.MachineUpgrade);
-            }
 
             _analyticsService.LogEvent("machine_upgraded", new Dictionary<string, object>
             {
@@ -229,9 +209,7 @@ namespace MiniFactory.Core
         private void OnBoostStarted(float duration, float multiplier)
         {
             if (feedbackRoot != null)
-            {
                 feedbackRoot.Play(FeedbackType.BoostActive);
-            }
 
             _analyticsService.LogEvent("boost_started", new Dictionary<string, object>
             {
@@ -253,9 +231,7 @@ namespace MiniFactory.Core
         private void OnApplicationPause(bool pause)
         {
             if (pause)
-            {
                 SaveGame();
-            }
         }
 
         private void SaveGame()

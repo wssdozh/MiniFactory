@@ -35,9 +35,7 @@ namespace MiniFactory.Gameplay
         public void Tick(float deltaTime)
         {
             if (IsActive == false)
-            {
                 return;
-            }
 
             RemainingSeconds -= deltaTime;
             if (RemainingSeconds <= 0f)

@@ -23,9 +23,7 @@ namespace MiniFactory.Gameplay
             get
             {
                 if (IsUnlocked == false)
-                {
                     return 0f;
-                }
 
                 return _config.BaseIncomePerSecond * Mathf.Pow(_config.IncomePerLevelMultiplier, Level - 1);
             }
@@ -36,9 +34,7 @@ namespace MiniFactory.Gameplay
             get
             {
                 if (IsUnlocked == false)
-                {
                     return 0;
-                }
 
                 return (int)(_config.BaseUpgradeCost * Mathf.Pow(_config.UpgradeCostMultiplier, Level - 1));
             }
@@ -55,9 +51,7 @@ namespace MiniFactory.Gameplay
         public void Unlock()
         {
             if (IsUnlocked)
-            {
                 return;
-            }
 
             IsUnlocked = true;
             Level = 1;
@@ -67,9 +61,7 @@ namespace MiniFactory.Gameplay
         public void Upgrade()
         {
             if (IsUnlocked == false)
-            {
                 return;
-            }
 
             Level++;
             Changed?.Invoke();

@@ -19,22 +19,15 @@ namespace MiniFactory.Gameplay
         {
             _state = state;
             if (_state != null)
-            {
                 _state.Changed += UpdateVisual;
-            }
+
             UpdateVisual();
         }
 
         private void Update()
         {
             if (_state == null || _state.IsUnlocked == false)
-            {
-                if (transform.localScale != _baseScale)
-                {
-                    transform.localScale = _baseScale;
-                }
                 return;
-            }
 
             float speed = 4f + _state.Level * 0.3f;
             float amplitude = Mathf.Min(0.04f + _state.Level * 0.012f, 0.14f);
@@ -45,9 +38,7 @@ namespace MiniFactory.Gameplay
         private void UpdateVisual()
         {
             if (spriteRenderer == null || _state == null)
-            {
                 return;
-            }
 
             spriteRenderer.color = _state.IsUnlocked ? Color.white : new Color(0.35f, 0.35f, 0.35f, 0.7f);
         }
@@ -55,9 +46,7 @@ namespace MiniFactory.Gameplay
         private void OnDisable()
         {
             if (_state != null)
-            {
                 _state.Changed -= UpdateVisual;
-            }
 
             transform.localScale = _baseScale;
         }

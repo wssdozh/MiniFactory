@@ -17,9 +17,7 @@ namespace MiniFactory.Gameplay
         public bool TrySpend(int amount)
         {
             if (amount < 0 || _coins < amount)
-            {
                 return false;
-            }
 
             _coins -= amount;
             CoinsChanged?.Invoke(_coins);
@@ -29,9 +27,7 @@ namespace MiniFactory.Gameplay
         public void Add(int amount)
         {
             if (amount <= 0)
-            {
                 return;
-            }
 
             _coins += amount;
             CoinsChanged?.Invoke(_coins);

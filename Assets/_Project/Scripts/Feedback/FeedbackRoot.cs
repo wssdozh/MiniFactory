@@ -14,9 +14,7 @@ namespace MiniFactory.Feedback
         private void Awake()
         {
             if (audioSource == null)
-            {
                 audioSource = GetComponent<AudioSource>();
-            }
 
             _entryLookup = new Dictionary<FeedbackType, FeedbackEntry>();
             if (entries != null)
@@ -25,9 +23,7 @@ namespace MiniFactory.Feedback
                 {
                     FeedbackEntry entry = entries[i];
                     if (entry != null && _entryLookup.ContainsKey(entry.Type) == false)
-                    {
                         _entryLookup.Add(entry.Type, entry);
-                    }
                 }
             }
         }
@@ -35,14 +31,10 @@ namespace MiniFactory.Feedback
         public void Play(FeedbackType type)
         {
             if (audioSource == null || _entryLookup == null)
-            {
                 return;
-            }
 
             if (_entryLookup.TryGetValue(type, out FeedbackEntry entry) && entry.Clip != null)
-            {
                 audioSource.PlayOneShot(entry.Clip, entry.Volume);
-            }
         }
     }
 }
