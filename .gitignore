@@ -30,6 +30,10 @@
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/
+/[Pp]rofilerCaptures/
+
+# Temporary screenshots from profiler sessions
+Screenshots/profiler_screen*
 
 # Auto-generated GDK artifacts
 /[Aa]ssets/Resources/GDKEditionAutoGen*
