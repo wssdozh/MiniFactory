@@ -14,6 +14,7 @@ namespace MiniFactory.Core
         [SerializeField] private WalletUI walletUI;
         [SerializeField] private MachineCardUI[] machineCards;
         [SerializeField] private BoostUI boostUI;
+        [SerializeField] private ShopUI shopUI;
         [SerializeField] private MachineWorldView[] machineWorldViews;
 
         private SaveService _saveService;
@@ -21,17 +22,22 @@ namespace MiniFactory.Core
         private MachineCollection _machines;
         private BoostState _boostState;
         private IConfigService _configService;
+        private IAnalyticsService _analyticsService;
+        private IStoreService _storeService;
         private float _fractionalCoins;
 
         public Wallet Wallet => _wallet;
         public MachineCollection Machines => _machines;
         public BoostState BoostState => _boostState;
         public IConfigService ConfigService => _configService;
+        public IAnalyticsService AnalyticsService => _analyticsService;
+        public IStoreService StoreService => _storeService;
 
         private void Awake()
         {
             _configService = gameConfig;
             _saveService = new SaveService();
+            _analyticsService = new AnalyticsService(new DebugAnalyticsProvider());
             SaveData save = _saveService.Load();
 
             var configs = (machineConfigs != null && machineConfigs.Length > 0)
@@ -42,6 +48,68 @@ namespace MiniFactory.Core
             _machines = new MachineCollection(configs, save.machines);
             _boostState = new BoostState(save.boost);
 
+            // Setup IAP
+            string coinsPackId = _configService != null ? _configService.CoinsPackSmallId : "coins_pack_small";
+            int coinsPackReward = _configService != null ? _configService.CoinsPackSmallReward : 500;
+            _storeService = new UnityIAPStoreService(new[] { coinsPackId }, forceFakeStore: true);
+
+            _storeService.PurchaseSucceeded += (id) =>
+            {
+                if (id == coinsPackId)
+                {
+                    _wallet.Add(coinsPackReward);
+                    SaveGame();
+                    _analyticsService.LogEvent("purchase_succeeded", new System.Collections.Generic.Dictionary<string, object>
+                    {
+                        { "product_id", id },
+                        { "coins_reward", coinsPackReward }
+                    });
+                }
+            };
+
+            _storeService.PurchaseFailed += (id, reason) =>
+            {
+                _analyticsService.LogEvent("purchase_failed", new System.Collections.Generic.Dictionary<string, object>
+                {
+                    { "product_id", id },
+                    { "reason", reason }
+                });
+            };
+
+            _storeService.Initialize();
+
+            // Bind domain events to Analytics
+            GameplayEvents.MachineUnlocked += (id) =>
+            {
+                _analyticsService.LogEvent("machine_unlocked", new System.Collections.Generic.Dictionary<string, object>
+                {
+                    { "machine_id", id }
+                });
+            };
+
+            GameplayEvents.MachineUpgraded += (id, level) =>
+            {
+                _analyticsService.LogEvent("machine_upgraded", new System.Collections.Generic.Dictionary<string, object>
+                {
+                    { "machine_id", id },
+                    { "new_level", level }
+                });
+            };
+
+            _boostState.BoostStarted += (duration, multiplier) =>
+            {
+                _analyticsService.LogEvent("boost_started", new System.Collections.Generic.Dictionary<string, object>
+                {
+                    { "duration", duration },
+                    { "multiplier", multiplier }
+                });
+            };
+
+            _boostState.BoostFinished += () =>
+            {
+                _analyticsService.LogEvent("boost_finished");
+            };
+
             if (save.lastSaveTimestamp > 0)
             {
                 float elapsed = (DateTime.UtcNow.Ticks - save.lastSaveTimestamp) / (float)TimeSpan.TicksPerSecond;
@@ -51,7 +119,19 @@ namespace MiniFactory.Core
                     totalIncome, elapsed, maxOfflineSeconds, _boostState);
 
                 _wallet.Add((int)offlineIncome);
+
+                _analyticsService.LogEvent("offline_income_applied", new System.Collections.Generic.Dictionary<string, object>
+                {
+                    { "offline_seconds", Mathf.Min(elapsed, maxOfflineSeconds) },
+                    { "offline_income", (int)offlineIncome }
+                });
             }
+
+            _analyticsService.LogEvent("game_started", new System.Collections.Generic.Dictionary<string, object>
+            {
+                { "coins", _wallet.Coins },
+                { "unlocked_machines_count", _machines.AllMachines.Count(m => m.IsUnlocked) }
+            });
 
             if (walletUI != null)
             {
@@ -61,6 +141,11 @@ namespace MiniFactory.Core
             if (boostUI != null)
             {
                 boostUI.Initialize(_boostState, _configService);
+            }
+
+            if (shopUI != null)
+            {
+                shopUI.Initialize(_storeService, coinsPackId, coinsPackReward);
             }
 
             var machineStates = _machines.AllMachines.ToList();
