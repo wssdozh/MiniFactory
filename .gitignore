@@ -31,6 +31,9 @@
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/
 
+# Auto-generated GDK artifacts
+/[Aa]ssets/Resources/GDKEditionAutoGen*
+
 # Recordings can get excessive in size
 /[Rr]ecordings/
 
