@@ -40,6 +40,7 @@ namespace MiniFactory.Core
 
         private void Awake()
         {
+            Application.targetFrameRate = 60;
             _configService = gameConfig;
             _saveService = new SaveService();
             _analyticsService = new AnalyticsService(new DebugAnalyticsProvider());
