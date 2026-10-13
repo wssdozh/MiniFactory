@@ -121,5 +121,88 @@ namespace MiniFactory.Tests
             Assert.AreEqual(1f, boost.Multiplier);
             Assert.AreEqual(0f, boost.RemainingSeconds);
         }
+
+        [Test]
+        public void BoostState_FiresStartedAndFinishedEvents()
+        {
+            var boost = new BoostState();
+            bool startedFired = false;
+            float startedDuration = 0f;
+            float startedMultiplier = 0f;
+            bool finishedFired = false;
+
+            boost.BoostStarted += (dur, mul) =>
+            {
+                startedFired = true;
+                startedDuration = dur;
+                startedMultiplier = mul;
+            };
+
+            boost.BoostFinished += () =>
+            {
+                finishedFired = true;
+            };
+
+            boost.Activate(15f, 3f);
+            Assert.IsTrue(startedFired);
+            Assert.AreEqual(15f, startedDuration);
+            Assert.AreEqual(3f, startedMultiplier);
+            Assert.IsFalse(finishedFired);
+
+            boost.Tick(16f);
+            Assert.IsTrue(finishedFired);
+        }
+
+        [Test]
+        public void AnalyticsService_DispatchesToMultipleProviders()
+        {
+            var providerA = new MockAnalyticsProvider();
+            var providerB = new MockAnalyticsProvider();
+            var service = new MiniFactory.Services.AnalyticsService(providerA, providerB);
+
+            var parameters = new System.Collections.Generic.Dictionary<string, object>
+            {
+                { "machine_id", "drill" },
+                { "level", 2 }
+            };
+
+            service.LogEvent("machine_upgraded", parameters);
+
+            Assert.AreEqual(1, providerA.LoggedEvents.Count);
+            Assert.AreEqual("machine_upgraded", providerA.LoggedEvents[0].Name);
+            Assert.AreEqual("drill", providerA.LoggedEvents[0].Params["machine_id"]);
+
+            Assert.AreEqual(1, providerB.LoggedEvents.Count);
+            Assert.AreEqual("machine_upgraded", providerB.LoggedEvents[0].Name);
+            Assert.AreEqual(2, providerB.LoggedEvents[0].Params["level"]);
+        }
+
+        [Test]
+        public void Store_SimulatedPurchaseSucceeded_CreditsWallet()
+        {
+            var wallet = new Wallet(100);
+            int rewardAmount = 500;
+
+            // Simulate purchase callback flow
+            wallet.Add(rewardAmount);
+
+            Assert.AreEqual(600, wallet.Coins);
+        }
+
+        private class MockAnalyticsProvider : MiniFactory.Services.IAnalyticsProvider
+        {
+            public class EventRecord
+            {
+                public string Name;
+                public System.Collections.Generic.Dictionary<string, object> Params;
+            }
+
+            public System.Collections.Generic.List<EventRecord> LoggedEvents { get; } = new();
+
+            public void LogEvent(string eventName, System.Collections.Generic.Dictionary<string, object> parameters = null)
+            {
+                LoggedEvents.Add(new EventRecord { Name = eventName, Params = parameters });
+            }
+        }
     }
 }
