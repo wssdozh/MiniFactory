@@ -6,7 +6,6 @@ namespace MiniFactory.Editor
 {
     public static class MachineConfigGenerator
     {
-        [MenuItem("Mini Factory/Generate Machine Configs")]
         public static void GenerateMachineConfigs()
         {
             string folder = "Assets/_Project/Configs/Machines";

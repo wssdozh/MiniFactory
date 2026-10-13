@@ -3,7 +3,6 @@ using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 
@@ -17,7 +16,6 @@ namespace MiniFactory.Editor
         private const string PalettesFolder = "Assets/_Project/Art/Tiles/TinyFactory/Palettes";
         private const string PalettePrefabPath = "Assets/_Project/Art/Tiles/TinyFactory/Palettes/TinyFactoryPalette.prefab";
 
-        [MenuItem("Mini Factory/Run Full Project Setup")]
         public static void RunFullSetup()
         {
             Debug.Log("[MiniFactory] Starting project setup...");
@@ -175,14 +173,7 @@ namespace MiniFactory.Editor
             cameraGo.transform.position = new Vector3(0f, 0f, -10f);
             cameraGo.tag = "MainCamera";
 
-            // 2. Global Light 2D for URP
-            GameObject lightGo = new GameObject("Global Light 2D");
-            Light2D light2d = lightGo.AddComponent<Light2D>();
-            light2d.lightType = Light2D.LightType.Global;
-            light2d.intensity = 1f;
-            light2d.color = Color.white;
-
-            // 3. Grid & Tilemap
+            // 2. Grid & Tilemap
             GameObject gridGo = new GameObject("Grid");
             Grid grid = gridGo.AddComponent<Grid>();
             grid.cellSize = new Vector3(1f, 1f, 0f);
@@ -220,8 +211,12 @@ namespace MiniFactory.Editor
                 }
             }
 
+            // 5. Bootstrap (Composition Root)
+            GameObject bootstrapGo = new GameObject("Bootstrap");
+            bootstrapGo.AddComponent<MiniFactory.Core.Bootstrap>();
+
             EditorSceneManager.SaveScene(scene, ScenePath);
-            Debug.Log($"[MiniFactory] Saved Main scene with Camera, 2D Light, and Tilemap floor at {ScenePath}.");
+            Debug.Log($"[MiniFactory] Saved Main scene with Camera, 2D Light, Tilemap floor, and Bootstrap at {ScenePath}.");
         }
 
         private static void ConfigureBuildSettings()
