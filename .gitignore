@@ -45,6 +45,21 @@
 # Visual Studio cache directory
 .vs/
 
+# Rider / IntelliJ
+.idea/
+
+# Android signing & local secrets — never commit
+*.keystore
+*.keystore.meta
+*.jks
+*.jks.meta
+.env
+.env.*
+
+# AI agent local files (keep local, not tracked in repo)
+AGENTS.md
+.agents/
+
 # Gradle cache directory
 .gradle/
 
