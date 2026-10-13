@@ -38,3 +38,6 @@
 3. **Устаревший API покупок:** модель сгенерировала код под `IStoreListener` (IAP v4). Логика переписана под актуальный `UnityIAPServices.StoreController()` (IAP v5.4.4).
 4. **Потеря дохода при высоком FPS:** из-за формулы `(int)(rate * Time.deltaTime)` доход ниже 60 монет/сек обнулялся. Логика исправлена на накопитель дробной части.
 5. **Повреждение сцены при правке YAML:** агент попытался вручную отредактировать `fileID` в файле сцены, вызвав переполнение `long.MaxValue`. Сцена восстановлена, привязка компонентов выполнена в редакторе.
+6. **Ошибки устаревшего Profiler API Unity:** агент сгенерировал скрипт выгрузки метрик с устаревшим API Unity 2021/2022 (`ProfilerDriver.selectedFrame`, `SortModes`, `frameGCMemory`). Исправлено точечно под API Unity 6 (`ProfilerDriver.firstFrameIndex`, `columnTotalTime`, `columnGcMemory`, `GetItemChildren(List<int>)`).
+7. **Устранение GC-аллокаций интерфейса:** в ходе профилирования реального файла захвата обнаружена покадровая аллокация строк (68 байт) в `WalletUI.OnCoinsChanged`. Заменена на безаллокационный `TextMeshPro.SetText("Coins: {0}", newCoins)`.
+8. **Разблокировка 60 FPS на Android:** в профилировщике выявлен простой 10.9 мс в `WaitForTargetFPS` (Android по умолчанию лочит 30 FPS). В `Bootstrap.Awake()` задан `Application.targetFrameRate = 60;`.
