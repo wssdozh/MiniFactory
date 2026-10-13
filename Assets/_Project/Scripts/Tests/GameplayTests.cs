@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using MiniFactory.Gameplay;
 using MiniFactory.Services;
+using MiniFactory.UI;
 using UnityEngine;
 
 namespace MiniFactory.Tests
@@ -187,6 +188,61 @@ namespace MiniFactory.Tests
             wallet.Add(rewardAmount);
 
             Assert.AreEqual(600, wallet.Coins);
+        }
+
+        [Test]
+        public void ShopUI_StatusReflectsStoreLifecycle()
+        {
+            GameObject go = new GameObject();
+            ShopUI shop = go.AddComponent<ShopUI>();
+            MockStoreService store = new MockStoreService(isInitialized: false);
+
+            shop.Initialize(store, "coins_pack", 500);
+            Assert.AreEqual(ShopUI.ShopStatus.Initializing, shop.Status);
+
+            store.SimulateInitialized();
+            Assert.AreEqual(ShopUI.ShopStatus.Ready, shop.Status);
+
+            store.SimulatePurchaseSucceeded("coins_pack");
+            Assert.AreEqual(ShopUI.ShopStatus.Success, shop.Status);
+
+            store.SimulatePurchaseFailed("coins_pack", "Failed");
+            Assert.AreEqual(ShopUI.ShopStatus.Failed, shop.Status);
+
+            Object.DestroyImmediate(go);
+        }
+
+        private class MockStoreService : IStoreService
+        {
+            public bool IsInitialized { get; private set; }
+            public event System.Action Initialized;
+            public event System.Action<string> PurchaseSucceeded;
+            public event System.Action<string, string> PurchaseFailed;
+
+            public MockStoreService(bool isInitialized)
+            {
+                IsInitialized = isInitialized;
+            }
+
+            public void Initialize() { }
+            public void Purchase(string productId) { }
+            public string GetProductPrice(string productId) => "$0.99";
+
+            public void SimulateInitialized()
+            {
+                IsInitialized = true;
+                Initialized?.Invoke();
+            }
+
+            public void SimulatePurchaseSucceeded(string productId)
+            {
+                PurchaseSucceeded?.Invoke(productId);
+            }
+
+            public void SimulatePurchaseFailed(string productId, string reason)
+            {
+                PurchaseFailed?.Invoke(productId, reason);
+            }
         }
 
         private class MockAnalyticsProvider : IAnalyticsProvider

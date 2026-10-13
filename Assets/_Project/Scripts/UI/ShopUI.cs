@@ -8,6 +8,8 @@ namespace MiniFactory.UI
 {
     public class ShopUI : MonoBehaviour
     {
+        public enum ShopStatus { Initializing, Ready, Processing, Success, Failed }
+
         [SerializeField] private Button buyButton;
         [SerializeField] private TextMeshProUGUI priceText;
         [SerializeField] private TextMeshProUGUI statusText;
@@ -16,6 +18,9 @@ namespace MiniFactory.UI
         private string _productId;
         private int _coinReward;
         private FeedbackRoot _feedback;
+        private ShopStatus _status = ShopStatus.Initializing;
+
+        public ShopStatus Status => _status;
 
         public void Initialize(IStoreService storeService, string productId, int coinReward, FeedbackRoot feedback = null)
         {
@@ -34,6 +39,7 @@ namespace MiniFactory.UI
             if (buyButton != null)
                 buyButton.onClick.AddListener(OnBuyClicked);
 
+            SetStatus(_storeService != null && _storeService.IsInitialized ? ShopStatus.Ready : ShopStatus.Initializing);
             UpdateDisplay();
         }
 
@@ -57,27 +63,45 @@ namespace MiniFactory.UI
 
             if (_storeService != null && string.IsNullOrEmpty(_productId) == false)
             {
-                if (statusText != null)
-                    statusText.text = "Processing...";
+                SetStatus(ShopStatus.Processing);
                 _storeService.Purchase(_productId);
             }
         }
 
         private void OnStoreInitialized()
         {
+            if (_status == ShopStatus.Initializing)
+                SetStatus(ShopStatus.Ready);
+
             UpdateDisplay();
         }
 
         private void OnPurchaseSucceeded(string productId)
         {
-            if (productId == _productId && statusText != null)
-                statusText.text = $"+{_coinReward} Coins!";
+            if (productId == _productId)
+                SetStatus(ShopStatus.Success);
         }
 
         private void OnPurchaseFailed(string productId, string reason)
         {
-            if (productId == _productId && statusText != null)
-                statusText.text = "Failed";
+            if (productId == _productId)
+                SetStatus(ShopStatus.Failed);
+        }
+
+        private void SetStatus(ShopStatus status)
+        {
+            _status = status;
+            if (statusText == null)
+                return;
+
+            statusText.text = status switch
+            {
+                ShopStatus.Initializing => "Store Init...",
+                ShopStatus.Processing => "Processing...",
+                ShopStatus.Success => $"+{_coinReward} Coins!",
+                ShopStatus.Failed => "Failed",
+                _ => string.Empty
+            };
         }
 
         private void UpdateDisplay()
@@ -85,7 +109,7 @@ namespace MiniFactory.UI
             bool ready = _storeService != null && _storeService.IsInitialized;
 
             if (buyButton != null)
-                buyButton.interactable = ready;
+                buyButton.interactable = ready && _status != ShopStatus.Processing;
 
             if (priceText != null)
             {
@@ -93,10 +117,10 @@ namespace MiniFactory.UI
                 priceText.text = $"+{_coinReward}\n{price}";
             }
 
-            if (statusText != null && ready == false)
-                statusText.text = "Store Init...";
-            else if (statusText != null && statusText.text == "Store Init...")
-                statusText.text = string.Empty;
+            if (!ready && _status != ShopStatus.Processing)
+                SetStatus(ShopStatus.Initializing);
+            else if (ready && _status == ShopStatus.Initializing)
+                SetStatus(ShopStatus.Ready);
         }
     }
 }
